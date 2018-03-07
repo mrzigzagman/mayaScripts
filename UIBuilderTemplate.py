@@ -1,4 +1,4 @@
-# UI BUILDER TEMPLATE .6.0.2
+# UI BUILDER TEMPLATE .6.0.3
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -98,7 +98,7 @@ class UIBuilder:
                 iCounter += 1
         self.Div.extend([iGap, iVerticalSpace])
 
-    def UIBGColor(self, sColour = 'Red'):
+    def UIBGColour(self, sColour = 'Red'):
         sColour = sColour.lower()
         dColour = { 'tone1':(1.000, 0.513, 0),
                     'tone2':(0.814, 0.521, 0.189),
@@ -151,11 +151,11 @@ class UIBuilder:
                         aAC.append( (self.Row[r][0][i], 'left', self.Row[r][1], self.Row[r][0][i-1]) )
                 else:
                     if i == 0:
-                        aAP.append( (self.Row[r][0][i], 'top', self.Row[r][2], self.Row[r-1][0][0]) )
+                        aAC.append( (self.Row[r][0][i], 'top', self.Row[r][2], self.Row[r-1][0][0]) )
                         aAP.append( (self.Row[r][0][i], 'left', self.iBoarderW, 0) )
 
                     else:
-                        aAP.append( (self.Row[r][0][i], 'top', self.Row[r][2], self.Row[r-1][0][0]) )
+                        aAC.append( (self.Row[r][0][i], 'top', self.Row[r][2], self.Row[r-1][0][0]) )
                         aAC.append( (self.Row[r][0][i], 'left', self.Row[r][1], self.Row[r][0][i-1]) )
         # Create Layout
         print aAP
@@ -164,7 +164,7 @@ class UIBuilder:
             cmds.formLayout(self.oForm, edit = True, attachControl = aAC)
 
         # Execute display UI
-        cmds.showWindow( self.dWindow)
+        cmds.showWindow( self.oWindow)
 
     def UILayout(self):
         '''
@@ -194,8 +194,8 @@ class UIBuilder:
         cmds.text(l = 'Range :', h = self.iRowHeight, w = self.Div[0][0]),
         cmds.textField(tx = '1001', h = self.iRowHeight, w = self.Div[0][1]),
         cmds.textField(tx = '1216', h = self.iRowHeight, w = self.Div[0][2]),
-        cmds.button(label = 'Current range', h = self.iRowHeight, w = self.Div[0][3], bgc = (0, .1, .1), enableBackground = False),
-        cmds.button(label = 'PlayBlast            [1]', h = self.iRowHeight, w = self.Div[0][4], bgc = (0, .1, .1), enableBackground = False),
+        cmds.button(label = 'Current range', h = self.iRowHeight, w = self.Div[0][3], bgc = self.UIBGColour('tone2'), enableBackground = False),
+        cmds.button(label = 'PlayBlast            [1]', h = self.iRowHeight, w = self.Div[0][4], bgc = self.UIBGColour('tone2'), enableBackground = False),
         cmds.button(label = '[2]', h = self.iRowHeight, w = self.Div[0][5], bgc = (0, .1, .1), enableBackground = False),
         cmds.button(label = '', h = self.iRowHeight, w = self.Div[0][6]),
         cmds.button(label = 'Current', h = self.iRowHeight, w = self.Div[0][7], bgc = (0, .1, .1), enableBackground = False),

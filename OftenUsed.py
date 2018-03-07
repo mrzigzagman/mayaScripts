@@ -1,4 +1,4 @@
-## [Often used] v1.0.40
+## [Often used] v1.3.0
 import maya.cmds as cmds
 import maya.mel as mel
 from functools import partial
@@ -19,6 +19,9 @@ if v2 - v1 > 1:
 
 # cmds.setKeyframe( oSel[0], breakdown = 0, at = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz'])
 
+# Similar to try:/ finally. this will close the file no matter what. Safer way to open a file.
+with open(sProjectConfigFile, 'r') as oFile:
+	dDict = json.load(oFile)
 
 #################
 
@@ -35,6 +38,16 @@ else:
 	else:
 		s = 'c'
 ##############
+import collections
+pos = collections.namedtuple('Position', ['name', 'xpos', 'ypos'])
+
+v = pos('one', 232, 323)
+print v
+print v.name
+
+
+
+
 
 x = 1 if z else 2
 
@@ -43,6 +56,10 @@ for iIndex, x in enumerate(oSel[:]): # [:] makes it run a copy of oSel so you ca
 	print x
 	oSel.remove(x)
 
+
+
+# Pring all attributes selected. (Regardless of shape, transform node..)
+print [str(c+'.'+cmds.attributeName(c+'.'+b, l=True)) for a in 'msho' for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or [] for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True})]
 
 
 # Run external python file
@@ -59,10 +76,23 @@ import shot_notes
 
 shot_notes.main()
 
+#json
+with open(sSceneConfigFile, 'w') as oFile:
+	json.dumps(dContent, indent = 4)) # dump STRING. returns
 
+with open(sProjectConfigFile, 'w') as oFile:
+	json.dump(dDict, oFile, indent = 4) # dump w/o returns nothing.
 
 # List all unde scene root
 ls(assembly = True)
+
+# Run external .py
+import sys; p = '/vol/transfer/dyabu/Scripts/mayaScripts/'
+if p not in sys.path: sys.path.append(p)
+import PlayBlastTool
+reload(PlayBlastTool)
+PlayBlastTool.main()
+
 
 
 # parent constraint only keyable.
@@ -149,6 +179,12 @@ clipboard = gtk.clipboard_get()
 clipboard.set_text('Shit!')
 clipboard.store()
 
+
+# Filter objects
+aKeyWords = ['*nose*','*lip*']
+aList = cmds.listAttr(r = True, st = aKeyWords) or []
+oFilter = cmds.itemFilterAttr(bns = aList)
+cmds.channelBox('mainChannelBox', e = True, attrFilter = oFilter)
 
 # Apply list to translation
 cmds.setAttr("TargetFollowOffset.rotate" , *[1,1,0] )
@@ -575,3 +611,27 @@ try:
 	cmds.bakeResults(aFirst, t = (aRange[0],aRange[1]), simulation = True )
 finally:
 	SpeedUpBake_2_Restore('tempLayout')
+
+#ScriptJob example (ScriptJob : script must fishish executing completely in order for maya to respond.)
+def CB(callback):
+	trans = set(cmds.ls(sl = True, type = 'transform'))
+	if trans:
+		cb = cmds.channelBox('mainChannelBox', q = True, sma = True) or []
+		if cb:
+			callback([a+'.' +b for a in trans for b in cb])
+		else:
+			objs = set(cmds.ls(sl = True)) - trans
+			if objs:
+				cmds.select(list(objs))
+				def temp():
+					res = [a+'.'+b for a in objs for b in cmds.channelBox('mainChannelBox', q = True, sma = True)or[]]
+					cmds.select(list(trans))
+					callback(res)
+				cmds.scriptJob(e = ('idle', temp), ro = True)
+
+def main():
+	def p(val):
+		print val
+	CB(p)
+	print 'test'
+#ScriptJob example - End
