@@ -260,7 +260,7 @@ def CopyToClipBoard(sString):
 def AnimToolAttributes(sTool, dDict = None):
 	# This funciton...
 	# 1. Sets Custom Animation Nodes for different custom tools. With Attributes Note activated (if they don't exist.)
-	# 2. Re0wirtes (if dDict is entered.)
+	# 2. Rewirtes (if dDict is entered.)
 	# 3. Returns dictionary. (if no dDict is specified.)
 
 
@@ -270,13 +270,16 @@ def AnimToolAttributes(sTool, dDict = None):
 		cmds.addAttr(oAnimTools, shortName = 'notes', dataType = 'string') # Activate Notes Attributes to store json
 		cmds.setAttr('%s.notes'%oAnimTools, json.dumps(None, indent = 4) , type = 'string')
 
+	
 	if not cmds.objExists(sTool):
 		cmds.group( em = True, name = sTool, p = oAnimTools)
 		cmds.addAttr(sTool, shortName = 'notes', dataType = 'string')
 		cmds.setAttr('%s.notes'%sTool, json.dumps(None, indent = 4), type = 'string')
 
+
 	if dDict:
 		cmds.setAttr('%s.notes'%sTool, json.dumps(dDict, indent = 4), type = 'string')
+
 
 	dDict = json.loads(cmds.getAttr('%s.notes' % sTool))
 	return dDict

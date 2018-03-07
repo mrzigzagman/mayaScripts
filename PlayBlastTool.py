@@ -1,4 +1,4 @@
-# PlayBlast Tool v10.1.1 wip 001
+# PlayBlast Tool v10.1.2
 # Weta Custom 1/1
 
 import maya.cmds as cmds
@@ -233,7 +233,7 @@ class UIBuilder:
 		aColour2 = ['darkgray', 'tone1']
 
 
-		# run only i fhte tool is extended. having the conv tool displaying
+		# run only if the tool is (UI is) extended. having the conv tools (on extra UI page) displaying
 		if self.dDict['ConvertTool']:
 			for i in range(5):
 
@@ -927,7 +927,7 @@ class UIBuilder:
 				os.system(cmd)
 			except Exception as e:
 				print e
-
+			print aPrint
 			self.PrintOnScreen(aPrint)
 
 		self.UIDisplayChecker()
@@ -940,19 +940,26 @@ class UIBuilder:
 		dToolInfo = self.StudioSettings.AnimToolAttributes(self.sTool)
 		sLabel = dToolInfo[sView]
 
+
 		iStartCapture = 0
 		if K:
+
 			if sLabel == '-':
 				sLabel = sView
 			else:
 				sLabel = '-'
+
 			dToolInfo[sView] = sLabel
+
+
+
 			self.StudioSettings.AnimToolAttributes(self.sTool, dToolInfo)
+
 		else:
 			if not sLabel == '-':
 				iStartCapture = 1
 
-		self.UIDisplayChecker()
+		#self.UIDisplayChecker()
 
 		# PlayBlast time!
 		if iStartCapture:
@@ -964,17 +971,22 @@ class UIBuilder:
 			cmds.playblast(format = 'image', filename = sCapturePath, st = int(sIn), et = int(sOut), sequenceTime = 0, clearCache = 1, viewer = 0, showOrnaments = 1, offScreen = True, fp = 4, percent = 100, compression = "jpg", quality = 70, fo = True)
 
 			cmds.warning('Capture Process All Finished')
-			self.UIDisplayChecker()
+			#self.UIDisplayChecker()
 
 			cmds.button('oUICapture%sButton'%sView, e = True, bgc = self.UIBGColour('tone1'))
-			self.dDict['LastCapture'] = sView
+			#self.dDict['LastCapture'] = sView
+			dToolInfo['LastCapture'] = sView
+
 			self.PrintOnScreen = ['a7a8af', 'Playblast done [%s]'%sView, 0x6b6c75]
 
 
 
-		self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
+		#self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
+		print 'sView', dToolInfo
+		self.StudioSettings.AnimToolAttributes(self.sTool, dToolInfo)
 
 		self.UIConvertTool_DisplayChecker()
+		self.UIDisplayChecker()
 
 
 
