@@ -111,34 +111,33 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 			# Create PROJECT config files.
 
 
-		'''
-		bg Colour
-		0.2541, 0.2963, 0.2963 Green Gray
-		0.2541, 0.33, 0.33 BLue Gray
-		0.1368, 0.1434, 0.1434 Dark Green
-		0.1368, 0.19, 0.19 Navy
-		0.1523, 0.19, 0.19 Purple
-		0.3, 0.2644, 0.2644 Beige
-		0.2602, 0.2554,0.2554 Green
 
-		'''
-		dContent = {'MayaBGColourPalette' : {	'MayaBGtone1': (0.2541, 0.2963, 0.2963),
-												'MayaBGtone2': (0.2541, 0.33, 0.33),
-												'MayaBGtone3': (0.3, 0.2644, 0.2644),
-												'MayaBGtone4': (0.1368, 0.19, 0.19),
-												'MayaBGtone5': (0.1523, 0.19, 0.19),
+		dContent = {'MayaBGColourPalette' : {	'MayaBGtone1': (0.3254,0.3490,0.2627),
+												'MayaBGtone2': (0.2627,0.3490,0.2627),
+												'MayaBGtone3': (0.2627,0.3490,0.3411),
+												'MayaBGtone4': (0.2627,0.3058,0.3490),
+												'MayaBGtone5': (0.3215,0.2627,0.3490),
+												'MayaBGtone6': (0.3490,0.2627,0.3137),
+												'MayaBGtone7': (0.3490,0.2745,0.2627),
+												'MayaBGtone8': (0.3490,0.3476,0.2627),
 												},
 					'MayaBGColourAssign' : {	'MayaBGtone1': '-',
 												'MayaBGtone2': '-',
 												'MayaBGtone3': '-',
 												'MayaBGtone4': '-',
 												'MayaBGtone5': '-',
+												'MayaBGtone6': '-',
+												'MayaBGtone7': '-',
+												'MayaBGtone8': '-',
 												},
 					'MayaBGColourFrequency' : {	'MayaBGtone1': 0,
 												'MayaBGtone2': 1,
 												'MayaBGtone3': 2,
 												'MayaBGtone4': 3,
 												'MayaBGtone5': 4,
+												'MayaBGtone6': 5,
+												'MayaBGtone7': 6,
+												'MayaBGtone8': 7,
 												},
 					}
 

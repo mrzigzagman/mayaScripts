@@ -1,9 +1,11 @@
+# UI BUILDER TEMPLATE .6.1.3
+# Adding the MayaBGColour feature.
+
+
 import maya.cmds as cmds
-#import imp
-#import json
-#import maya.mel as mel
-#import getpass
-#import os
+import maya.mel as mel
+import getpass
+import os
 from functools import partial
 
 K = cmds.getModifiers()
@@ -15,63 +17,18 @@ class UIBuilder:
 	### Class FUnctions ###
 	def __init__(self):
 		self.Temp = ''
-
-		# Keywords must start with Capital letters.
-		self.oFilter = None
-		self.aCategoryList = [	'Brow',
-								'Eye',
-								'Nose',
-								'Cheek',
-								'Lip',
-								'Jaw',
-								'Neck',
-								'Extra',]
-
-		self.dFilterList = {	'Brow': {'KeyWords':['*Brow*', '*Procerus*'],
-										'Colour':'gray',
-										'Key': 'Brow',},
-								'Eye':  {'KeyWords':['*Eye*',],
-										'Colour':'gray',
-										'Key': 'Eye',},
-								'Nose': {'KeyWords':['*Nose*',],
-										'Colour':'gray',
-										'Key': 'Nose',},
-								'Cheek':{'KeyWords':['*Cheek*',],
-										'Colour':'gray',
-										'Key': 'Cheek',},
-								'Lip':  {'KeyWords':['*Lip*',],
-										'Colour':'gray',
-										'Key': 'Lip',},
-								'Jaw':  {'KeyWords':['*Jaw*',],
-										'Colour':'gray',
-										'Key': 'Jaw',},
-								'Neck': {'KeyWords':['*Neck*'],
-										'Colour':'gray',
-										'Key': 'Neck',},
-								'Extra':{'KeyWords':['*Close*', ],
-										'Colour':'gray',
-										'Key': 'Extra',},
-								}
-		aAddList = ['B','L','R']
-
-		for n in self.aCategoryList:
-			for a in aAddList:
-				self.dFilterList[n].update({a:'b%s%s'%(n,a)})
-
-		self.aActiveButtons = []
+		self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
 
 
-		self.oUI = 'Facial Panel'
+		self.oUI = 'test'
 		self.UISetWindow()
 		self.UICreate()
 
 
-
-
 	def UISetWindow(self):
 		### Pre-Setup ###
-		self.Width = 150 # Total Width of Window in pixel (Default 320)
-		self.Height = 185 # Total Height of Window in pixel
+		self.Width = 450 # Total Width of Window in pixel (Default 320)
+		self.Height = 590 # Total Height of Window in pixel
 
 		self.iBoarderW = 10 # Default Empty Pixels around window for Width
 		self.iBoarderH = 10 # Default Empty Pixels around window for Height
@@ -146,22 +103,31 @@ class UIBuilder:
 		self.Div.extend([iGap, iVerticalSpace])
 
 	def UIBGColour(self, sColour = 'Red'):
+		# Get Maya BG Colour from pallette.
+		sScriptName = 'MayaBGColour' # state the filename without '.py'
+		MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
+
+		oRGB = MayaBGColour.getBGColour()
+
 		sColour = sColour.lower()
+
+		# List all keys in lowerCase
 		dColour = { 'tone1':(1.000, 0.513, 0),
 					'tone2':(0.814, 0.521, 0.189),
 					'tone3':(0.745, 0.586, 0.341),
 					'tone4':(0.492, 0.430, 0.334),
 
 					# Need Revise on colour
+					'lightgray':(0.6, 0.6, 0.6),
+					'whitegray':(0.8, 0.8, 0.8),
 					'white':(1,1,1),
 					'darkgray':(0.3,0.3,0.3),
 					'gray':(0.4, 0.4, 0.4),
-					'blue':(0.6, 0.6, 0.8),
+					'blue':(0.8, 0.8, 0.8),
 					'yellow':(1.0, 1.0, 0.8),
 					'red':(0.7, 0.4, 0.4),
-					'lightgray':(0.6, 0.6, 0.6),
-					'whitegray':(0.8, 0.8, 0.8),
-					}
+					'lightgray':(0.7, 0.7, 0.7),
+					'mayabg':oRGB,}
 
 		return dColour[sColour]
 
@@ -175,7 +141,7 @@ class UIBuilder:
 			cmds.deleteUI(self.oUI, window=True)
 
 		# Create window as formLayout
-		self.oWindow = cmds.window(self.oUI, mnb = False, mxb = False, title = self.oUI, sizeable = False)
+		self.oWindow = cmds.window(self.oUI, mnb = False, mxb = False, title = self.oUI, sizeable = False, bgc = self.UIBGColour('MayaBG'))
 		self.oForm = cmds.formLayout()
 
 		cmds.window(self.oWindow, edit=True, widthHeight = (self.Width, self.Height))
@@ -207,13 +173,13 @@ class UIBuilder:
 						aAC.append( (self.Row[r][0][i], 'top', self.Row[r][2], self.Row[r-1][0][0]) )
 						aAC.append( (self.Row[r][0][i], 'left', self.Row[r][1], self.Row[r][0][i-1]) )
 		# Create Layout
-		#print aAP
+		print aAP
 		cmds.formLayout(self.oForm, edit = True, attachPosition = aAP)
 		if aAC:
 			cmds.formLayout(self.oForm, edit = True, attachControl = aAC)
 
 		# Execute display UI
-		cmds.showWindow(self.oWindow)
+		cmds.showWindow( self.oWindow)
 
 	def UILayout(self):
 		'''
@@ -226,200 +192,72 @@ class UIBuilder:
 
 
 
+
+
+
+
 		aRow = []
 
-		self.iRowHeight = 15
+		self.iRowHeight = 25
+
+
+
+
 
 		## Row
-		self.UIDivision([1], None, 0); aRow = [
-		cmds.button('bChar',label = 'FACE chr Dr Strange', h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour('darkgray'),c = partial(self.UIButton_CharSwitch)),
+		self.UIDivision([.6,.6,.6,1,1.8,.7,0.1,1], None, 0); aRow = [
+		cmds.text(l = 'Range :', h = self.iRowHeight, w = self.Div[0][0]),
+		cmds.textField(tx = '1001', h = self.iRowHeight, w = self.Div[0][1]),
+		cmds.textField(tx = '1216', h = self.iRowHeight, w = self.Div[0][2]),
+		cmds.button(label = 'Current range', h = self.iRowHeight, w = self.Div[0][3], bgc = self.UIBGColour('tone2'), enableBackground = False),
+		cmds.button(label = 'PlayBlast            [1]', h = self.iRowHeight, w = self.Div[0][4], bgc = self.UIBGColour('tone2'), enableBackground = False),
+		cmds.button(label = '[2]', h = self.iRowHeight, w = self.Div[0][5], bgc = (0, .1, .1), enableBackground = False),
+		cmds.button(label = '', h = self.iRowHeight, w = self.Div[0][6]),
+		cmds.button(label = 'Current', h = self.iRowHeight, w = self.Div[0][7], bgc = (0, .1, .1), enableBackground = False),
 		]; self.UIAddRow(aRow)
 
 
-		for i, r in enumerate(self.aCategoryList):
-			if i == 0:
-				iH = 10
-			else:
-				iH = 0
-			## Row
-			self.UIDivision([1,2,1], None, iH); aRow = [
-			cmds.button('b%sR'%r,label = '', h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour(self.dFilterList[r]['Colour']),c = partial(self.UIButton_Filter, i, 'R')),
-			cmds.button('b%sB'%r,label = r, h = self.iRowHeight, w = self.Div[0][1], bgc = self.UIBGColour(self.dFilterList[r]['Colour']),c = partial(self.UIButton_Filter, i, 'B')),
-			cmds.button('b%sL'%r,label = '', h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour(self.dFilterList[r]['Colour']),c = partial(self.UIButton_Filter, i, 'L')),
-			]; self.UIAddRow(aRow)
 
 		## Row
-		self.UIDivision([1], None, 10); aRow = [
-		cmds.button('bClear',label = 'Clear All ', h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour('darkgray'),c = partial(self.UIButton_Clear)),
+		self.UIDivision([.6,.6,.6,1,1.1,0.7,0.7,0.1,1], None, 0); aRow = [
+		cmds.text(l = 'Set : ', h = self.iRowHeight, w = self.Div[0][0]),
+		cmds.button(label = 'Bigger', h = self.iRowHeight, w = self.Div[0][1], bgc = (1,1,1), enableBackground = False, c = partial(self.UIButton_Bigger, 500) ),
+		cmds.button(label = 'Smaller', h = self.iRowHeight, w = self.Div[0][2], bgc = (1,1,1), enableBackground = False, c = partial(self.UIButton_Smaller, 100) ),
+		cmds.button(label = 'Prod Range', h = self.iRowHeight, w = self.Div[0][3], bgc = (1,1,1), enableBackground = False),
+		cmds.text(l = '', h = self.iRowHeight, w = self.Div[0][4]),
+		cmds.button(label = '[3]', h = self.iRowHeight, w = self.Div[0][5], bgc = (1,1,1), enableBackground = False),
+		cmds.separator(height = 40, style = 'in', w = self.Div[0][6]),
+		cmds.separator(height = 40, style = 'in', w = self.Div[0][7]),
+		cmds.button(label = 'Marked', h = self.iRowHeight, w = self.Div[0][8], bgc = (1,1,1), enableBackground = False),
 		]; self.UIAddRow(aRow)
 
-	def UIButton_Clear(self, *args):
-		cmds.channelBox('mainChannelBox', e = True, attrFilter = 0)
-		self.aActiveButtons = []
-		self.UIRefresh()
 
-	def	UIButton_CharSwitch(self, *args):
-		print 'character'
+		## Row
+		self.UIDivision([.6,1.2,1,0.4,.7,1.4,0.1,1], None, 0); aRow = [
+		cmds.text(l = 'Weta : ', h = self.iRowHeight, w = self.Div[0][0]),
+		cmds.button(label = 'BLAST', h = self.iRowHeight, w = self.Div[0][1], bgc = (0,.1,.1), enableBackground = False),
+		cmds.button(label = 'SHOTSUB', h = self.iRowHeight, w = self.Div[0][2], bgc = (0,.1,.1), enableBackground = False),
+		cmds.text(l = '', h = self.iRowHeight, w = self.Div[0][3]),
+		cmds.button(label = 'Saved', h = self.iRowHeight, w = self.Div[0][4], bgc = (0,.1,.1), enableBackground = False ),
+		self.AddDropMenu('DropdownMenu', self.Div[0][5], 4, 'drop', partial(self.Dropdown_Changed, 1), ['1','2','3','4'], 1),
+		cmds.text(l = '', h = self.iRowHeight, w = self.Div[0][6]),
+		cmds.button(label = 'Range', h = self.iRowHeight, w = self.Div[0][7], bgc = (0,.1,.1), enableBackground = False ),
+		]; self.UIAddRow(aRow)
 
+		## Row
+		self.UIDivision([.6,.6,.6,1,1.8,.7,0.1,1], None, 0); aRow = [
+		cmds.floatSliderGrp('floatSlider1', label = 'Size', field = True, h = self.iRowHeight, w = self.Div[0][0], cw = [1, 25], cc = partial(self.FloatSlider_Changed, 'floatSlider1'), minValue = 0.1, maxValue = 2.0, fieldMinValue = 0.1, fieldMaxValue = 2.0, value = 1),
+		cmds.floatSliderGrp('floatSlider2', label = 'Size', field = True, h = self.iRowHeight, w = self.Div[0][0], cw = [1,25], cc = partial(self.FloatSlider_Changed, 'floatSlider1'), minValue = 0.1, maxValue = 2.0, fieldMinValue = 0.1, fieldMaxValue = 2.0, value = 1),
+		]; self.UIAddRow(aRow)
 
-	def UIRefresh(self):
-		for k in self.aCategoryList:
-			for s in ['R','B','L']:
-				cmds.button(self.dFilterList[k][s], e = True, bgc = self.UIBGColour('gray'))
-
-		for a in self.aActiveButtons:
-			cmds.button(a, e = True, bgc = self.UIBGColour('lightgray'))
-			cmds.button(a[:-1]+'B', e = True, bgc = self.UIBGColour('lightgray'))
-
-		for a in self.aActiveButtons:
-			if a[-1] == 'B':
-				for s in ['R','B','L']:
-					cmds.button(a[:-1]+s, e = True, bgc = self.UIBGColour('whitegray'))
-
-
-
-	def	UIButton_Filter(self, iIndex, sSide, *args):
-		K = cmds.getModifiers()
-
-		b = self.dFilterList[self.aCategoryList[iIndex]][sSide]
-		# Logic to set self.aActiveButtons for UI colour and filter objects
-		if b[-1] == 'B':
-			if b[:-1]+'B' in self.aActiveButtons:
-				self.aActiveButtons.remove(b)
-			elif b[:-1]+'R' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['R'])
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-
-			elif b[:-1]+'L' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['L'])
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-			else:
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-		elif b[-1] == 'R':
-			if b[:-1]+'B' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['L'])
-			elif b[:-1]+'R' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['R'])
-			elif b[:-1]+'L' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['L'])
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-			else:
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['R'])
-		else: # if b[-1] == 'L':
-			if b[:-1]+'B' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['R'])
-			elif b[:-1]+'R' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['R'])
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-			elif b[:-1]+'L' in self.aActiveButtons:
-				self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['L'])
-			else:
-				self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['L'])
-
-		#print self.aActiveButtons
-
-		# Create a List of Keywords to be Filtered.
-		self.oFilter = cmds.itemFilterAttr(bns = [])
-
-		aTweaks = cmds.listAttr(r = True, st = '*Tweaks*') or []
-		oTweaks = cmds.itemFilterAttr(bns = aTweaks)
-
-		for a in self.aActiveButtons:
-			aKeyWords = self.dFilterList[a[1:-1]]['KeyWords']
-			aKeyWordList = cmds.listAttr(r = True, st = aKeyWords) or []
-			oKeyWordList = cmds.itemFilterAttr(bns = aKeyWordList)
-
-			if not a[-1] == 'B':
-				aKeyWords.append('*%s'%a[-1])
-				self.oFilter = cmds.itemFilterAttr(intersect = (oKeyWordList, oTweaks))
-
-
-
-
-
-
-
-
-
-
-
-		print aKeyWords
-
-
-
-
-		self.UIRefresh()
-
-		iAdd = 0
-		aList = cmds.listAttr(r = True, st = aKeyWords) or []
-		if self.oFilter == None:
-			self.oFilter = cmds.itemFilterAttr(bns = aList)
-		elif iAdd == 0:
-			pass
-		elif iAdd == 1:
-			self.oFilter = cmds.itemFilterAttr(union = (self.oFilter, cmds.itemFilterAttr(bns = aList)))
-
-		#print 1
-		cmds.channelBox('mainChannelBox', e = True, attrFilter = self.oFilter)
-		#print 2
-
-
-
-		'''
-		# Getting the General Filter
-		oFilter = None
-		for f in aList:
-			oTemp = cmds.itemFilter(bn = f)
-			oTemp = cmds.itemFilter(union = (oTemp, cmds.itemFilter(bn = f.lower())))
-			if oFilter:
-				oFilter = cmds.itemFilter(union = (oFilter, oTemp))
-			else:
-				oFilter = oTemp
-
-		# Filtering out L/R
-		if sSide == 'L':
-			oComparisonFilter = cmds.itemFilter(bn = '*L')
-		elif sSide == 'R':
-			oComparisonFilter = cmds.itemFilter(bn = '*R')
-		else:
-			oComparisonFilter = None
-
-		if oComparisonFilter:
-			oFilter = cmds.itemFilter(intersect = (oFilter, oComparisonFilter))
-
-
-
-
-		# Filtering Tweaks
-		oTweak = None
-		oTweak = cmds.itemFilter(bn = '*Tweak*')
-		oTweak = cmds.itemFilter(union = (oTweak, cmds.itemFilter(bn = f.lower())))
-		if K == 8: # ALT
-			oFilter = cmds.itemFilter(intersect =(oFilter, oTweak))
-		elif K == 4: # CTL
-			pass
-		elif K == 1: # Shift
-			oFilter = oTweak
-
-
-		else: # None
-			oIntersect = cmds.itemFilter(intersect = (oFilter, oTweak))
-			oFilter = cmds.itemFilter(difference = (oFilter, oIntersect))
-
-		#if oTweak:
-		#	oFilter = cmds.itemFilter(intersect = (oFilter, oComparisonFilter))
-
-
-
-
-		cmds.channelBox('mainChannelBox', e = True, attrFilter = oFilter)
-
-		cmds.delete(oTemp)
-		#print sPart, sSide
-		'''
-
+		## Row
+		self.UIDivision([1,1,1,1,1], None, 0); aRow = [
+		cmds.separator( height = 40, style = 'none', w = self.Div[0][0] ),
+		cmds.separator( height = 40, style = 'single', w = self.Div[0][0] ),
+		cmds.separator( height = 40, style = 'out', w = self.Div[0][0] ),
+		cmds.separator( height = 40, style = 'in', w = self.Div[0][0] ),
+		cmds.separator( height = 40, style = 'shelf', w = self.Div[0][0] ),
+		]; self.UIAddRow(aRow)
 
 	def UIButton_Bigger(self, iHeight, *args):
 		print 'Bigger'
@@ -476,6 +314,3 @@ class UIBuilder:
 
 def main():
 	UIBuilder()
-
-if __name__ == '__main__':
-	 main()
