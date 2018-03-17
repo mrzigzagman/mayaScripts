@@ -65,7 +65,7 @@ def Execute(skey = 'j', iModifier = 0, sPress = 'P'):
 			sModifier = aModifier[i+1]
 
 	dHotKeys = {
-					'B_ALT_P': NOT,
+					'B_ALT_P': HotKey_PreviousGreenKey,
 					'B_N_P': HotKey_PreviousKey,
 					# 'C_ALT_P': C_ALT_P,
 
@@ -95,10 +95,10 @@ def Execute(skey = 'j', iModifier = 0, sPress = 'P'):
 
 					# 'K_ALT_P': K_ALT_P,
 					# 'L_ALT_P': L_ALT_P,
-					'M_ALT_P': HotKey_Paste,
+					'M_ALT_P': HotKey_Copy,
 					'M_N_P': HotKey_NextFrame,
 
-					'N_ALT_P': HotKey_Copy,
+					'N_ALT_P': HotKey_NextGreenKey,
 					'N_N_P': HotKey_NextKey,
 					# 'O_ALT_P': O_ALT_P
 
@@ -120,6 +120,7 @@ def Execute(skey = 'j', iModifier = 0, sPress = 'P'):
 					'Y_N_P': HotKey_RotationTool_P,
 					'Y_N_R': HotKey_RotationTool_R,
 
+					'COMMA_ALT_P': HotKey_Paste,
 					'SPACE_N_P': HotKey_PanePoP,
 					}
 	#print sKey, sModifier, sPress
@@ -154,8 +155,106 @@ def ATT_INCREMENT(iAmount):
 	cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = aPrint[3], fade = True, fts = 10, ft = 'arial',bkc = aPrint[2] )
 
 
+def GreenTickKeys(iAllFrame = 0):
+
+	oKeyPoseFrames = 'KeyPoseFrames'
+	aKeyFrames= []
+	if cmds.objExists(oKeyPoseFrames):
+		for i in range(cmds.keyframe(oKeyPoseFrames+'.tx', kc = True, q = True)):
+			aKeyFrames.extend(cmds.keyframe(oKeyPoseFrames+'.tx', index = (i,i), q = True))
+
+
+		aObjList = [str(s) for s in cmds.selectionConnection('graphEditor1FromOutliner', q = True, object = True)  or [] ]
+		#aCurveList = [str(s) for s in cmds.keyframe(q = True, name = True)]
+
+		# Store Selected Keys
+		aSelection = []
+		for o in aObjList:
+			aName = cmds.keyframe(o, query = True, name = True)
+			aKeys = cmds.keyframe(o, sl = True, q = True)
+
+			if aName and aKeys:
+				aSelection.append([str(aName[0]), aKeys])
+
+		# Clear keys
+		cmds.selectKey( clear = True)
+
+		# DO
+		fTime = cmds.currentTime(q = True)
+		if fTime in aKeyFrames:
+			cmds.keyframe(t = (fTime, fTime), tds = True)
+
+		# Select Stored keys
+		if aSelection:
+			for a in aSelection:
+				sName = a[0]
+				for t in a[1]:
+					cmds.selectKey(sName, t = (t,t), tgl = True)
+
+		# Update All Frames red/green.
+		if iAllFrame:
+			iIn = int(cmds.playbackOptions(q = True, minTime = True))
+			iOut = int(cmds.playbackOptions(q = True, maxTime = True))
+			for i in range(iIn, iOut+1):
+				if i in aKeyFrames:
+					cmds.keyframe(t = (i, i), tds = True)
+				else:
+					cmds.keyframe(t = (i, i), tds = False)
 
 ##### HotKey_ Fuctions #####
+
+def HotKey_PreviousGreenKey():
+	oKeyPoseFrames = 'KeyPoseFrames'
+	aKeyFrames= []
+	if cmds.objExists(oKeyPoseFrames):
+		for i in range(cmds.keyframe(oKeyPoseFrames+'.tx', kc = True, q = True)):
+			aKeyFrames.extend(cmds.keyframe(oKeyPoseFrames+'.tx', index = (i,i), q = True))
+
+		iIn = int(cmds.playbackOptions(q = True, minTime = True))
+		iOut = int(cmds.playbackOptions(q = True, maxTime = True))
+
+		iCurrent = cmds.currentTime(q = True)
+
+		iFrame = aKeyFrames[0]
+
+		for v in aKeyFrames[:]:
+			if v >= iCurrent:
+				aKeyFrames.remove(v)
+		if aKeyFrames:
+			iFrame = aKeyFrames[-1]
+
+
+		cmds.undoInfo(swf = 0)
+		cmds.currentTime(iFrame)
+		cmds.undoInfo(swf = 1)
+		GreenTickKeys()
+
+def HotKey_NextGreenKey():
+	oKeyPoseFrames = 'KeyPoseFrames'
+	aKeyFrames= []
+	if cmds.objExists(oKeyPoseFrames):
+		for i in range(cmds.keyframe(oKeyPoseFrames+'.tx', kc = True, q = True)):
+			aKeyFrames.extend(cmds.keyframe(oKeyPoseFrames+'.tx', index = (i,i), q = True))
+
+		iIn = int(cmds.playbackOptions(q = True, minTime = True))
+		iOut = int(cmds.playbackOptions(q = True, maxTime = True))
+
+		iCurrent = cmds.currentTime(q = True)
+
+		iFrame = aKeyFrames[-1]
+
+		for v in aKeyFrames[:]:
+			if v <= iCurrent:
+				aKeyFrames.remove(v)
+		if aKeyFrames:
+			iFrame = aKeyFrames[0]
+
+
+
+		cmds.undoInfo(swf = 0)
+		cmds.currentTime(iFrame)
+		cmds.undoInfo(swf = 1)
+		GreenTickKeys()
 
 def HotKey_PanePoP():
 	mel.eval('panePop;')
@@ -216,6 +315,7 @@ def HotKey_PreviousFrame():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.currentTime(q = True) - 1)
 	cmds.undoInfo(swf = 1)
+	GreenTickKeys()
 def Hotkey_SelectAll_P():
 
 	mel.eval('buildSelectAllMM')
@@ -228,8 +328,11 @@ def HotKey_PreviousKey():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.findKeyframe(timeSlider = True, which = 'previous'))
 	cmds.undoInfo(swf = 1)
+	GreenTickKeys()
 def Hotkey_SetKey():
 	mel.eval('performSetKeyframeArgList 1 {"0", "animationList"}')
+	GreenTickKeys(1)
+
 
 
 def HotKey_NextKey():
@@ -237,6 +340,7 @@ def HotKey_NextKey():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.findKeyframe(timeSlider = True, which = 'next'))
 	cmds.undoInfo(swf = 1)
+	GreenTickKeys()
 def HotKey_Playback_P():
 	mel.eval('togglePlayback')
 def HotKey_Playback_R():
@@ -290,6 +394,7 @@ def HotKey_NextFrame():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.currentTime(q = True) +1 )
 	cmds.undoInfo(swf = 1)
+	GreenTickKeys()
 
 def HotKey_Focus():
 	mel.eval('fitPanel -selectedNoChildren')
@@ -360,6 +465,7 @@ def HotKey_SetUI():
 
 def HotKey_AttrIncrement_p001():
 	ATT_INCREMENT(0.01)
+	GreenTickKeys()
 
 def HotKey_Paste():
 	mel.eval('cutCopyPaste "paste"')
@@ -367,6 +473,7 @@ def HotKey_Paste():
 
 def HotKey_AttrIncrement_p01():
 	ATT_INCREMENT(0.1)
+	GreenTickKeys()
 def HotKey_Copy():
 	mel.eval('cutCopyPaste "copy"')
 
@@ -423,6 +530,7 @@ def HotKey_ScaleTool_R():
 
 def HotKey_AttrIncrement_n001():
 	ATT_INCREMENT(-0.01)
+	GreenTickKeys()
 def HotKey_Undo():
 	cmds.undo()
 
