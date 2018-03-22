@@ -4,9 +4,13 @@
 # need a few cleanups.
 # - camera creation R_ALT
 
+# vvv 3/3
+
 
 import maya.cmds as cmds
 import maya.mel as mel
+import imp
+import redbox as rb #vvv 1/2
 
 sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScrips/'
 
@@ -154,6 +158,8 @@ def ATT_INCREMENT(iAmount):
 
 	cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = aPrint[3], fade = True, fts = 10, ft = 'arial',bkc = aPrint[2] )
 
+def PrintOnScreen(aPrint):
+	cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'topCenter', fade = True, fts = 10, ft = 'arial', bkc = aPrint[2])
 
 def GreenTickKeys(iAllFrame = 0):
 
@@ -176,8 +182,8 @@ def GreenTickKeys(iAllFrame = 0):
 			if aName and aKeys:
 				aSelection.append([str(aName[0]), aKeys])
 
-		# Clear keys
-		cmds.selectKey( clear = True)
+		if cmds.ls(sl = True):
+			cmds.selectKey( clear = True)
 
 		# DO
 		fTime = cmds.currentTime(q = True)
@@ -266,10 +272,28 @@ def HotKey_AttrIncrement_n01():
 def HotKey_ToggleVisCurves():
 	# Toggle nurbsCurve in modelPanel4 (top Left)
 	bSwitch = cmds.modelEditor('modelPanel4', q = True, nurbsCurves = True)
-	bSwitch = abs(-1-bSwitch*-1)
+	#bSwitch = bSwitch * -1 +1
+	bSwitch = False == bSwitch
 
 	cmds.modelEditor('modelPanel4', e = True, nurbsCurves = bSwitch, handles = bSwitch, locators = bSwitch)
-	#cmds.modelEditor('modelPanel1', e = True, nurbsCurves = bSwitch, handles = bSwitch)
+	cmds.modelEditor('modelPanel1', e = True, nurbsCurves = bSwitch, handles = bSwitch, locators = bSwitch)
+
+	### Toggle vis atlas Lights vvv 1/2
+	def walk(parent):
+		for child in parent.getChildElements():
+			yield child
+			for ch in walk(child):
+				yield ch
+
+	ws = rb.Workspace.getShared()
+	for child in walk(ws):
+		if 'IBL' in child.name:
+			child.visible = False == bSwitch
+	### end
+
+	aLight = ['all', 'default']
+	cmds.modelEditor('modelPanel4', e = True, dl = aLight[bSwitch])
+	cmds.modelEditor('modelPanel1', e = True, dl = aLight[bSwitch])
 
 
 
@@ -437,31 +461,119 @@ def HotKey_Focus():
 def HotKey_SetUI():
 
 	oSel = [str(o) for o in cmds.ls(sl = True, o = True)]
+
+	iRecreateAnimCam = 0 # 1 = Re-create ANIM_CAM everytime. 0 = Only create when there is no cam.
 	sCamName = 'ANIM_CAM'
-	aList = ['focalLength', 'focusDistance', 'centerOfInterest', 'locatorScale', 'nearClipPlane', 'farClipPlane']
+	if iRecreateAnimCam:
+		aList = ['focalLength', 'focusDistance', 'centerOfInterest', 'locatorScale', 'nearClipPlane', 'farClipPlane']
+
+		aTransform = []
+		aAttr = []
+		if cmds.objExists(sCamName):
+			aTransform.append(cmds.xform(sCamName, q = True, ws = True, t = True))
+			aTransform.append(cmds.xform(sCamName, q = True, ws = True, ro = True))
+			for a in aList:
+				aAttr.append(cmds.getAttr('%sShape.%s'%(sCamName,a)))
+			cmds.delete(sCamName)
+
+		oCamera = cmds.camera()
+		cmds.rename(oCamera[0], '%s'%sCamName)
+
+		if aTransform:
+			cmds.xform(sCamName, ws = True, t = aTransform[0])
+			cmds.xform(sCamName, ws = True, ro = aTransform[1])
+
+			for i, v in enumerate(aAttr):
+				cmds.setAttr('%sShape.%s'%(sCamName,aList[i]),v)
+	else:
+		if not cmds.objExists(sCamName):
+			oCamera = cmds.camera()
+			cmds.rename(oCamera[0], '%s'%sCamName)
 
 
-	aTransform = []
-	aAttr = []
-	if cmds.objExists(sCamName):
-		aTransform.append(cmds.xform(sCamName, q = True, ws = True, t = True))
-		aTransform.append(cmds.xform(sCamName, q = True, ws = True, ro = True))
-		for a in aList:
-			aAttr.append(cmds.getAttr('%sShape.%s'%(sCamName,a)))
-		cmds.delete(sCamName)
-
-	oCamera = cmds.camera()
-	cmds.rename(oCamera[0], '%s'%sCamName)
-
-	if aTransform:
-		cmds.xform(sCamName, ws = True, t = aTransform[0])
-		cmds.xform(sCamName, ws = True, ro = aTransform[1])
-
-		for i, v in enumerate(aAttr):
-			cmds.setAttr('%sShape.%s'%(sCamName,aList[i]),v)
-	cmds.select(oSel, r = True)
 
 	mel.eval('setNamedPanelLayout "Custom_Anim";')
+	ProjectCustom_SetUI() # Custom tool for this proj
+
+	cmds.select(oSel, r = True)
+
+def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
+
+	sSideCamera = 'SIDE_CAM'
+	if not cmds.objExists(sSideCamera):
+		oSideCamera = cmds.camera()
+		cmds.rename(oSideCamera[0], '%s'%sSideCamera)
+
+
+	oSel = [str(s) for s in cmds.ls(sl = True, o = True)]
+
+	# Importing Studio Settings
+	sScriptName = 'StudioSettings' # remove '.py'
+	sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
+	StudioSettings = imp.load_source(sScriptName, '%s/%s.py'%(sScriptPath,sScriptName))
+
+	dDict = {'ABACustomCamViews':0}
+
+	aGroup = [	'AllCameras',
+				'CardRig_',
+				'SideCam_',
+				'FaceCam_',
+				'RenderCam_',
+				'Rosa',
+				'Alita',
+				'Lights'] # Do not change order. Possible to add more.
+	cmds.select(clear = True)
+
+	for g in aGroup:
+
+		if not cmds.objExists(g):
+			if '_' in g:
+				cmds.group( em = True, name = g, p = aGroup[0])
+			else:
+				cmds.group( em = True, name = g)
+
+			if g == aGroup[0]:
+				cmds.addAttr(aGroup[0], shortName = 'notes', dataType = 'string') # Activate Notes Attributes to store json
+				StudioSettings.AnimToolAttributes(aGroup[0], dDict) # Store dDict
+
+	dDict = StudioSettings.AnimToolAttributes(aGroup[0]) # Get dDict
+
+
+	iType = dDict['ABACustomCamViews'] + 1
+	if iType == 1:
+		aPrint = ['a7a8f', 'Render', 0x6b6c75]
+		aVis = [1, 1, 0, 0, 1, None, None, 1]
+		sCamKeyword = 'Left'
+	elif iType == 2:
+		aPrint = ['a7a8f', 'Face', 0x6b6c75]
+		aVis = [1, 0, 0, 1, 0, None, None, 0]
+		sCamKeyword = 'Shape1'
+		iType = 0 # Ending loop here for now.
+	elif iType == 3:
+		aPrint = ['a7a8f', 'Side', 0x6b6c75]
+		aVis = [1, 0, 1, 0, 1, None, None, 1]
+		sCamKeyword = 'SIDE_CAM'
+
+	for i, v in enumerate(aVis):
+		if not v == None:
+			cmds.setAttr('%s.visibility'%aGroup[i], v)
+
+	sCamera = ''
+	aCamera = cmds.ls(type = 'camera')
+	for c in aCamera:
+		if sCamKeyword in c:
+			sCamera = c
+	if sCamera:
+		cmds.modelEditor('modelPanel4', e = True, camera = sCamera)
+	cmds.modelEditor('modelPanel1', e = True, camera = 'ANIM_CAM')
+
+
+
+
+	PrintOnScreen(aPrint)
+	dDict['ABACustomCamViews'] = iType
+	StudioSettings.AnimToolAttributes(aGroup[0], dDict) # Store dDict
+
 
 def HotKey_AttrIncrement_p001():
 	ATT_INCREMENT(0.01)

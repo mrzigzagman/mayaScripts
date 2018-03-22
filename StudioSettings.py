@@ -4,6 +4,19 @@
 import json
 import maya.cmds as cmds
 
+def ProjectInfo(sProj = ''):
+
+	aProjectInfo = [[0,0], # Playblast Width & Height (int has to be able to divide by 4.)
+					]
+
+	if sProj == 'ABA':
+		aProjectInfo[0] = [1092, 576]
+
+
+
+
+	return aProjectInfo
+
 def ShotInfo(iFolder = 0, iPrint = 0):
 	''' Adjusting Studio differences of Folder Hiearchy to get Shot Numbers and Paths and etc.
 

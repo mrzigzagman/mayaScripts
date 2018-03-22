@@ -49,8 +49,8 @@ def main():
 			dDict['MayaBGColourFrequency'][keyA] -= 1
 		dDict['MayaBGColourFrequency'][sColourAssign] = 4 # max number of colour index
 
-	print 'MayaBGColour - Write'
-	print dDict
+	#print 'MayaBGColour - Write'
+	#print dDict
 	# Logic is done. Write to file
 	with open(sProjectConfigFile, 'w') as oFile:
 		#json.dumps(dDict, indent = 4) #This Does not work
@@ -75,8 +75,10 @@ def getBGColour():
 	sShotNumber = aShotInfo[4]+aShotInfo[3]
 	sProjectConfigFile = aShotInfo[12]
 
+
 	with open(sProjectConfigFile, 'r') as oFile:
 		dDict = json.load(oFile)
+
 
 	for keyA, valueA in dDict['MayaBGColourAssign'].iteritems(): # find the Tone of current shotnumber.
 		if valueA == sShotNumber:

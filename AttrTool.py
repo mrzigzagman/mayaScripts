@@ -99,8 +99,9 @@ class UIBuilder:
 			for f in cmds.ls('*:FacialActionControl'):
 				self.aFaces.extend([str(s).replace(':chr',' ').replace('FacePuppet', '') for s in cmds.ls('%s:chr*'%f.split(':')[0]) if s.endswith('Puppet') ])
 		oSel = [str(s) for s in cmds.ls(sl = True, o = True)]
-		if oSel[0] in self.aPuppet:
-			self.iChar = self.aPuppet.index(oSel[0])
+		if oSel:
+			if oSel[0] in self.aPuppet:
+				self.iChar = self.aPuppet.index(oSel[0])
 
 		self.oUI = 'Facial Panel'
 		self.UISetWindow()

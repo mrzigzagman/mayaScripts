@@ -1,4 +1,4 @@
-# PlayBlast Tool v10.1.2
+# PlayBlast Tool v10.2.0
 # Weta Custom 1/1
 
 import maya.cmds as cmds
@@ -18,22 +18,17 @@ class UIBuilder:
 	### Class FUnctions ###
 	def __init__(self):
 		self.Temp = ''
-		self.sTool = 'PBTool'
-
-
-
+		self.sTool = 'PBTool' # Tool name node under 'Anim_Tool'
 
 		# Importing Studio Settings
 		self.sScriptName = 'StudioSettings' # remove '.py'
 		self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
 		self.StudioSettings = imp.load_source(self.sScriptName, '%s/%s.py'%(self.sScriptPath,self.sScriptName))
 
-
-
 		# Getting info using StudioSettings
 		self.aShotInfo = self.StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
 		self.sRvPath = self.aShotInfo[6] + 'Active.rv'
-		self.oUI = '%s_PB' % (self.aShotInfo[4]+self.aShotInfo[3])
+		self.oUI = 'PB_%s_%s' % (self.aShotInfo[4], self.aShotInfo[3]) # Watch out when this is only numbers, the tool fails.
 
 		# Setting up tool custom dictionary for storage
 		self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
@@ -94,6 +89,7 @@ class UIBuilder:
 		'''Re-Create all UI'''
 		if cmds.window(self.oUI, exists = True):
 			cmds.deleteUI(self.oUI, window = True)
+
 		self.UICreate()
 
 	def UIConvertTool(self, sType, *args):
@@ -496,11 +492,11 @@ class UIBuilder:
 
 		if self.dDict['ConvertTool']:
 			## Row
-			self.UIDivision([1], None, 0)
-			aRow = [
+			self.UIDivision([1], None, 0); aRow = [
 			cmds.separator(height = self.iRowHeight, style = 'in', w = self.Div[0][0]),
-			]
-			self.UIAddRow(aRow)
+			]; self.UIAddRow(aRow)
+
+
 
 			## Row
 			self.UIDivision([4, 1, 1, .5, 1, 1, 1.5], None, 0) ; aRow = [
@@ -512,6 +508,7 @@ class UIBuilder:
 			cmds.button('oUIConvert6', label = '2', h = self.iRowHeight, w = self.Div[0][5], bgc = self.UIBGColour('darkgray'), command = partial(self.UIConvertTool, '6')),
 			cmds.text(l = '[ To ]         ', h = self.iRowHeight, w = self.Div[0][6]),
 			] ; self.UIAddRow(aRow)
+
 
 			## Row
 			self.UIDivision([4, 1, 1, .5, 1, 1, 1.5], None, 0); aRow = [
@@ -655,6 +652,7 @@ class UIBuilder:
 		self.UIDisplayChecker()
 		self.UIConvertTool_DisplayChecker()
 
+
 	def UIButton_SetRangeFromRV(self, *args):
 		aContent = self.GetActiveRVinfo()
 		iIn = aContent[1][0]
@@ -669,6 +667,7 @@ class UIBuilder:
 		self.UIDisplayChecker()
 
 	def UIButton_RVInfoToMaya(self, sType, *args):
+		K = cmds.getModifiers()
 
 
 
@@ -678,7 +677,7 @@ class UIBuilder:
 		# aContent[2] : RV Marked Frames
 		# aContent[3] : Current Frame
 		#self.PrintOnScreen(['a7a8af', 'Testing Here', 0x6b6c75 ])
-		print aContent
+
 		if aContent:
 			if sType == 'Range':
 				cmds.playbackOptions(min = aContent[1][0])
@@ -690,7 +689,10 @@ class UIBuilder:
 
 				oAnimTools = 'ANIM_TOOLS'
 				self.sTool = 'PBTool'
-				oTick = 'MarkedFrames'
+				if K:
+					oTick = 'KeyPoseFrames'
+				else:
+					oTick = 'MarkedFrames'
 
 
 				if aContent[2]:
@@ -854,7 +856,7 @@ class UIBuilder:
 			self.dDict['currentStartFrame'] = iCurrent
 			cmds.button('oUIStartButton', e = True, label = iCurrent)
 
-			print iCurrent, self.dDict['currentEndFrame']
+			#print iCurrent, self.dDict['currentEndFrame']
 			# if End frame is before current frame.
 			if self.dDict['currentEndFrame'] <= iCurrent:
 				self.dDict['currentEndFrame'] = iCurrent + 1
@@ -865,7 +867,7 @@ class UIBuilder:
 			self.dDict['currentEndFrame'] = iCurrent
 			cmds.button('oUIEndButton', e = True, label = iCurrent)
 
-			print iCurrent, self.dDict['currentStartFrame']
+			#print iCurrent, self.dDict['currentStartFrame']
 			# if End frame is before current frame.
 			if self.dDict['currentStartFrame'] >= iCurrent:
 				self.dDict['currentStartFrame'] = iCurrent - 1
@@ -923,11 +925,11 @@ class UIBuilder:
 
 			try:
 				cmd = 'rv %s &' % (self.sRvPath)
-				print cmd
+				#print cmd
 				os.system(cmd)
 			except Exception as e:
 				print e
-			print aPrint
+			#print aPrint
 			self.PrintOnScreen(aPrint)
 
 		self.UIDisplayChecker()
@@ -982,7 +984,7 @@ class UIBuilder:
 
 
 		#self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
-		print 'sView', dToolInfo
+		#print 'sView', dToolInfo
 		self.StudioSettings.AnimToolAttributes(self.sTool, dToolInfo)
 
 		self.UIConvertTool_DisplayChecker()

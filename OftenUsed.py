@@ -1,4 +1,4 @@
-## [Often used] v1.3.0
+## [Often used] v1.3.1
 import maya.cmds as cmds
 import maya.mel as mel
 from functools import partial
@@ -60,6 +60,37 @@ for iIndex, x in enumerate(oSel[:]): # [:] makes it run a copy of oSel so you ca
 
 # Pring all attributes selected. (Regardless of shape, transform node..)
 print [str(c+'.'+cmds.attributeName(c+'.'+b, l=True)) for a in 'msho' for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or [] for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True})]
+
+
+# Toggle Trick
+sphere.visibility = False == sphere.visibility
+# s.v = False == True (returns False)
+# s.v = False == False (returns True)
+
+or
+iVal = abs(iVal-1)
+iVal = iVal * -1 + 1
+
+
+
+# And & Or
+var1 = var2 and var3
+# if Var 2 is true, var3 is returned.
+# if Var 2 is False, var2 is returned. (because it fails at var2)
+
+var1 = var2 or var3
+# if Var 2 is true, var2 is returned. (because the statement is already true)
+# if Var2 is False, var3 is returned.
+
+# all()
+bBool = all([1,1,1,1]) # True
+bBool = all([1,1,0,1]) # False
+
+
+# Swap Variables
+iVal1, iVal2 = iVal2, iVal1
+
+
 
 
 # Run external python file
@@ -267,6 +298,10 @@ aRot = cmds.xform(oSel, q = True,  ro = True, os = True)
 ### To get Scene File Path
 cmds.file( q = True, sn = True)
 
+
+### In view Message
+self.PrintOnScreen = ['a7a8af', 'Playblast done [%s]'%sView, 0x6b6c75]
+cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'topCenter', fade = True, fts = 10, ft = 'arial', bkc = aPrint[2])
 
 ### Display Message Box
 def MessageBox(Message):

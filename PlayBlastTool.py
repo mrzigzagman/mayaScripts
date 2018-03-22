@@ -1,5 +1,5 @@
 # PlayBlast Tool v10.2.0
-# Weta Custom 1/1
+# Weta Custom 1/2
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -27,6 +27,8 @@ class UIBuilder:
 
 		# Getting info using StudioSettings
 		self.aShotInfo = self.StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
+		self.iPBwidth = self.StudioSettings.ProjectInfo('ABA')[0][0]
+		self.iPBheight = self.StudioSettings.ProjectInfo('ABA')[0][1]
 		self.sRvPath = self.aShotInfo[6] + 'Active.rv'
 		self.oUI = 'PB_%s_%s' % (self.aShotInfo[4], self.aShotInfo[3]) # Watch out when this is only numbers, the tool fails.
 
@@ -496,14 +498,19 @@ class UIBuilder:
 			cmds.separator(height = self.iRowHeight, style = 'in', w = self.Div[0][0]),
 			]; self.UIAddRow(aRow)
 
+
+
 			## Row
 			self.UIDivision([4, 1, 1, .5, 1, 1, 1.5], None, 0) ; aRow = [
 			cmds.text(l = 'Convert Tool :                    [ From ]', h = self.iRowHeight, w = self.Div[0][0]),
-
+			cmds.button('oUIConvert1', label = '1', h = self.iRowHeight, w = self.Div[0][1], bgc = self.UIBGColour('darkgray'), command = partial(self.UIConvertTool, '1')),
+			cmds.button('oUIConvert2', label = '2', h = self.iRowHeight, w = self.Div[0][2], bgc = self.UIBGColour('darkgray'), command = partial(self.UIConvertTool, '2')),
+			cmds.separator( height = self.iRowHeight, style = 'none', w = self.Div[0][3]),
 			cmds.button('oUIConvert5', label = '1', h = self.iRowHeight, w = self.Div[0][4], bgc = self.UIBGColour('darkgray'), command = partial(self.UIConvertTool, '5')),
 			cmds.button('oUIConvert6', label = '2', h = self.iRowHeight, w = self.Div[0][5], bgc = self.UIBGColour('darkgray'), command = partial(self.UIConvertTool, '6')),
 			cmds.text(l = '[ To ]         ', h = self.iRowHeight, w = self.Div[0][6]),
 			] ; self.UIAddRow(aRow)
+
 
 			## Row
 			self.UIDivision([4, 1, 1, .5, 1, 1, 1.5], None, 0); aRow = [
@@ -965,7 +972,8 @@ class UIBuilder:
 			sIn = dToolInfo['currentStartFrame']
 			sOut = dToolInfo['currentEndFrame']
 
-			cmds.playblast(format = 'image', filename = sCapturePath, st = int(sIn), et = int(sOut), sequenceTime = 0, clearCache = 1, viewer = 0, showOrnaments = 1, offScreen = True, fp = 4, percent = 100, compression = "jpg", quality = 70, fo = True)
+			cmds.playblast(format = 'image', filename = sCapturePath, st = int(sIn), et = int(sOut), sequenceTime = 0, clearCache = 1, viewer = 0, showOrnaments = 1, offScreen = True, fp = 4, percent = 100, compression = "jpg", quality = 70, fo = True, wh = [self.iPBwidth, self.iPBheight])
+			print '[1092, 576]'
 
 			cmds.warning('Capture Process All Finished')
 			#self.UIDisplayChecker()
