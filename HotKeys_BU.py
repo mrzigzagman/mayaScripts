@@ -1,5 +1,3 @@
-# Hotkeys - Consolidated v0.1.0
-# new feature. a button to create custom scripts in Script editor.
 # Hotkeys - Consolidated v0.0.3
 # Focus Button Custom
 # Hotkeys - Consolidated v0.0.2
@@ -113,28 +111,27 @@ def KeyList():
 	'COMMA_ALT_P': HotKey_Paste,
 	'SPACE_N_P': HotKey_PanePoP,
 	}
-	return dHotKeys
+	return dHotKeys.keys()
 
 def Execute(skey = 'j', iModifier = 0, sPress = 'P'):
 	sKey = skey.upper()
 	sModifier = str(iModifier)
 	sPress = sPress.upper()
 	aModifier = [   0, 'N',
-					1, 'SFT',
-					4, 'CTR',
+					1, 'SHIFT',
+					4, 'CTRL',
 					8, 'ALT',
 					5, 'S+C',
 					9, 'S+A',
 					12, 'A+C',
-					13, 'C+A+S',
-					9999,'CMD']
+					13, 'C+A+S',]
 	for i in range(0, len(aModifier), 2):
 		if aModifier[i] == iModifier:
 			sModifier = aModifier[i+1]
 
 	dHotKeys = KeyList()
 
-
+	print sKey, sModifier, sPress
 	dHotKeys['%s_%s_%s' % (sKey, sModifier, sPress)]()
 
 

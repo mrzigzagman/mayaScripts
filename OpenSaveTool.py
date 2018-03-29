@@ -9,6 +9,8 @@ from datetime import datetime
 import getpass
 import imp
 
+import StudioSettings
+import MayaBGColour
 
 
 
@@ -41,29 +43,37 @@ class UIBuilder:
 		self.sUser = getpass.getuser()
 		self.oUI = ''
 
+
 		# Get Studio Settings from external
-		self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
-		self.StudioSettings = imp.load_source('StudioSettings', '%s/StudioSettings.py'% self.sScriptPath)
+
+		#self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
+		#StudioSettings = __import__("StudioSettings")
+		#self.StudioSettings = imp.load_source('StudioSettings', '%s/StudioSettings.py'% self.sScriptPath)
+		self.aShotInfo = StudioSettings.ShotInfo(1,1) # (1,1) = (Folder Creation, Print paths.)
+
 
 
 		# ScenePath stuffs
-		self.sShotPath = ''
-		self.sScenePath = ''
-		self.GetScenePathFromCurrentEnvironment()
+
+		self.sScenePath = self.aShotInfo[1]
+		#self.sShotPath = ''
+		self.sShotPath = '/'.join(self.sScenePath.split('/')[:-1])
+
+		#self.GetScenePathFromCurrentEnvironment()
+
 
 		if self.ErrorCheckAndFolderCreation():
-
 			self.aAllList = self.CollectMayaFiles()
 			self.oWindow = None
-
 			self.UISetWindow()
 			self.UICreate()
 		else:
 			cmds.warning('Please Save your current scene.')
 
 
-
+	'''
 	def GetScenePathFromCurrentEnvironment(self):
+
 		self.sShotPath = os.getcwd()
 		self.sScenePath = cmds.file(q = True, sn = True)
 		if not self.sScenePath:
@@ -73,31 +83,36 @@ class UIBuilder:
 			#self.sScenePath = 'ScenePath goes here'
 		else:
 			self.sScenePath = '/'.join(self.sScenePath.split('/')[:-1])
-		return self.sScenePath
+		return self.sScenePath'''
 
 	def ErrorCheckAndFolderCreation(self):
 
 		# if the current scene is not saved:
-
+		aCurrentShot = os.getcwd().split('/')
 		aShots = self.sShotPath.split('/')
-		sSeqNum = aShots[4]
-		sShotNum = aShots[5]
+		#aShots = self.sScenePath.split('/')
+		sSeqNum = self.aShotInfo[4]
+		sShotNum = self.aShotInfo[3]
+
+		#print aCurrentShot
+
 
 
 		# Error check if the path is set to a Project
 		iHealth = 1
-		if not len(aShots) == 6:
-			iHealth = 0
 
+		# vvv ?/? 6 is set to studio.
+		if not len(aCurrentShot) == 6:
+			iHealth = 0
 		# /proj/mll/shots/ate/5120/motion/work/maya/dyabu/Scenes/ate_5120_dyabu.v000.00.FirstBuild.0000.ma
-		if not aShots[1] == 'proj' and aShots[3] == 'shots':
+		if not aCurrentShot[1] == 'proj' and aCurrentShot[3] == 'shots':
 			ihealth = 0
 
 
 		# if all clear:
 		if iHealth:
 			# Check Folders Existance
-			self.sShotPath += '/motion/work/maya/%s'%self.sUser
+			#self.sShotPath += '/motion/work/maya/%s'%self.sUser
 			aPath = ['/Scenes',
 			'/Scenes/Old',
 			'/Exports',
@@ -111,18 +126,19 @@ class UIBuilder:
 
 
 			# Check if there are any .ma files in /Scenes
-			self.sShotPath += '/Scenes'
+			#self.sShotPath += '/Scenes'
 			aMaFiles = []
-			for o in os.listdir( self.sShotPath):
+			for o in os.listdir( self.sScenePath):
 				if o.endswith('.ma'):
 					if self.FileNameConventionCheck(o):
 						aMaFiles.append(o)
 
 			# Create the first scene if no ma file with correct naming exists.
 			if not aMaFiles:
-				self.sShotPath += '/%s_%s_%s.v000.00.FirstBuild.0000.ma'%(sSeqNum, sShotNum, self.sUser)
+				sTempScene = self.sScenePath
+				sTempScene += '/%s_%s_%s.v000.00.FirstBuild.0000.ma'%(sSeqNum, sShotNum, self.sUser)
 				try:
-					cmds.file( rename = self.sShotPath)
+					cmds.file( rename = sTempScene)
 					cmds.file( save = True, type = 'mayaAscii')
 				except Exception as e:
 					print e # coding = utf-8
@@ -227,7 +243,7 @@ class UIBuilder:
 	def UIBGColour(self, sColour = 'Red'):
 		# Get Maya BG Colour from pallette.
 		sScriptName = 'MayaBGColour' # state the filename without '.py'
-		MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
+		#MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
 
 		oRGB = MayaBGColour.getBGColour()
 
@@ -294,7 +310,7 @@ class UIBuilder:
 						aAC.append( (self.Row[r][0][i], 'top', self.Row[r][2], self.Row[r-1][0][0]) )
 						aAC.append( (self.Row[r][0][i], 'left', self.Row[r][1], self.Row[r][0][i-1]) )
 		# Create Layout
-		print aAP
+		#print aAP
 
 
 		cmds.formLayout(self.oForm, edit = True, attachPosition = aAP)
@@ -480,11 +496,12 @@ class UIBuilder:
 			# Saving New Scene FileName
 			sFileName = '.'.join(aFileName)+'.ma'
 
-			aAllPath = cmds.file( q = True, sn = True).split('/')[:-1]
-			aAllPath.append(sFileName)
+			#aAllPath = cmds.file( q = True, sn = True).split('/')[:-1]
+			#aAllPath.append(sFileName)
+			sFileName = self.sScenePath+'/'+sFileName
 
-			sFileName = '/'.join(aAllPath)
-
+			#sFileName = '/'.join(aAllPath)
+			#print 'sFileName', sFileName
 			cmds.file(rename = sFileName)
 			cmds.file(save = True, type = 'mayaAscii')
 
@@ -571,8 +588,8 @@ class UIBuilder:
 		self.GetPath()
 
 	def GetPath(self):
-		sPath = self.GetScenePathFromCurrentEnvironment()
-		cmds.button('oFolder', e = True, label = sPath)
+
+		cmds.button('oFolder', e = True, label = self.sShotPath.replace('/', ' / '))
 
 	def GetTime(self):
 		''' Getting Scene File Creation Time.'''
@@ -661,16 +678,17 @@ class UIBuilder:
 
 
 	def Button_OpenFolder(self, *args):
-		self.StudioSettings.ShotInfo(0,1) # (1,1) = (Folder Creation, Print paths.)
+		StudioSettings.ShotInfo(0,1) # (1,1) = (Folder Creation, Print paths.)
 		aPath = self.GetScenePathFromCurrentEnvironment().split('/')
+		#aPath = self.sScenePath
 		sPath = '/'.join(aPath)
 
 		if not cmds.getModifiers() == 0:
-			self.StudioSettings.OSFileBrowserCommand(sPath)
+			StudioSettings.OSFileBrowserCommand(sPath)
 			aPrint = ['a7a8af', 'Opening Folder.', 0x6b6c75]
 
 		else:
-			self.StudioSettings.CopyToClipBoard(sPath)
+			StudioSettings.CopyToClipBoard(sPath)
 			aPrint = ['a7a8af', 'Copied to Clipboard.', 0x6b6c75]
 
 		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'botCenter', fade = True, fts = 7, ft = 'arial',bkc = aPrint[2] )
@@ -713,7 +731,7 @@ class UIBuilder:
 
 		else:
 			# cmds.file(sAllPath, o = True)
-			self.StudioSettings.OpenSceneCommand(sAllPath)
+			StudioSettings.OpenSceneCommand(sAllPath)
 
 
 	def MessageBox(self, Message, sPath, *args):
@@ -742,7 +760,7 @@ class UIBuilder:
 			mel.eval('incrementalSave;')
 
 		if iVal: # if not Cancelled.
-			self.StudioSettings.OpenSceneCommand(sPath)
+			StudioSettings.OpenSceneCommand(sPath)
 
 		if self.oWindow:
 			cmds.deleteUI(self.oWindow)
@@ -766,10 +784,10 @@ class UIBuilder:
 				aDropDown[2] = 1
 				aDropDown[3] = 1
 		elif iMenu == 2:
-			print 1
-			print self.aAllList[2][aDropDown[0]-1]
-			print self.aAllList[2][aDropDown[0]-1][aDropDown[1]-1]
-			print 0
+			#print 1
+			#print self.aAllList[2][aDropDown[0]-1]
+			#print self.aAllList[2][aDropDown[0]-1][aDropDown[1]-1]
+			#print 0
 			if len(self.aAllList[2][aDropDown[0]-1][aDropDown[1]-1]) <= aDropDown[2]:
 				aDropDown[2] = 1
 				aDropDown[3] = 1
@@ -872,16 +890,18 @@ class UIBuilder:
 
 
 		#sAllPath = self.sShotPath
-		self.sShotPath = self.GetScenePathFromCurrentEnvironment()
 
-		if self.sShotPath:
+		#self.sShotPath = self.aShotInfo[1]
+
+		if self.sScenePath:
 			aSceneFiles = []
-			for o in os.listdir(self.sShotPath):
+			for o in os.listdir(self.sScenePath):
 				if o.endswith('.ma'):
 					if self.FileNameConventionCheck(o):
 						aSceneFiles.append(o)
 
 			aSceneFiles = list(reversed(aSceneFiles))
+
 
 			# Create list of first dropdown (Shot Numbers) aAllList[0]
 			for o in aSceneFiles:
@@ -923,9 +943,9 @@ class UIBuilder:
 
 
 				# Continue here. List the Increment versions
-				for i in range(0, len(aAllList[2])):
+				for i in range(0, len(aAllList[0])):
 					aTemp = []
-					for n in range(0, len(aAllList[2][i])):
+					for n in range(0, len(aAllList[1][i])):
 						aTemp.append([])
 						for v in range(0, len(aAllList[2][i][n])):
 							aTemp[n].append([])
@@ -940,6 +960,9 @@ class UIBuilder:
 							aTemp[n][v].sort(reverse = True)
 
 					aAllList[3].append(aTemp)
+
+
+
 			return aAllList
 
 

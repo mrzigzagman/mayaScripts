@@ -1,5 +1,5 @@
 # PlayBlast Tool v10.2.0
-# Weta Custom 1/1
+# Weta Custom 1/2
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -27,6 +27,8 @@ class UIBuilder:
 
 		# Getting info using StudioSettings
 		self.aShotInfo = self.StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
+		self.iPBwidth = self.StudioSettings.ProjectInfo('ABA')[0][0]
+		self.iPBheight = self.StudioSettings.ProjectInfo('ABA')[0][1]
 		self.sRvPath = self.aShotInfo[6] + 'Active.rv'
 		self.oUI = 'PB_%s_%s' % (self.aShotInfo[4], self.aShotInfo[3]) # Watch out when this is only numbers, the tool fails.
 
@@ -929,7 +931,8 @@ class UIBuilder:
 				os.system(cmd)
 			except Exception as e:
 				print e
-			#print aPrint
+
+			print aPrint
 			self.PrintOnScreen(aPrint)
 
 		self.UIDisplayChecker()
@@ -970,7 +973,8 @@ class UIBuilder:
 			sIn = dToolInfo['currentStartFrame']
 			sOut = dToolInfo['currentEndFrame']
 
-			cmds.playblast(format = 'image', filename = sCapturePath, st = int(sIn), et = int(sOut), sequenceTime = 0, clearCache = 1, viewer = 0, showOrnaments = 1, offScreen = True, fp = 4, percent = 100, compression = "jpg", quality = 70, fo = True)
+			cmds.playblast(format = 'image', filename = sCapturePath, st = int(sIn), et = int(sOut), sequenceTime = 0, clearCache = 1, viewer = 0, showOrnaments = 1, offScreen = True, fp = 4, percent = 100, compression = "jpg", quality = 70, fo = True, wh = [self.iPBwidth, self.iPBheight])
+			print '[1092, 576]'
 
 			cmds.warning('Capture Process All Finished')
 			#self.UIDisplayChecker()
@@ -979,7 +983,7 @@ class UIBuilder:
 			#self.dDict['LastCapture'] = sView
 			dToolInfo['LastCapture'] = sView
 
-			self.PrintOnScreen = ['a7a8af', 'Playblast done [%s]'%sView, 0x6b6c75]
+			self.PrintOnScreen(['a7a8af', 'Playblast done [%s]'%sView, 0x6b6c75])
 
 
 

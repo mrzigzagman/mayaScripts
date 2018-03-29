@@ -1,5 +1,6 @@
-# PlayBlast Tool v10.2.0
-# Weta Custom 1/2
+# PlayBlast Tool v10.2.1
+# Define capture folders.
+# vvv 3/3
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -26,7 +27,7 @@ class UIBuilder:
 		self.StudioSettings = imp.load_source(self.sScriptName, '%s/%s.py'%(self.sScriptPath,self.sScriptName))
 
 		# Getting info using StudioSettings
-		self.aShotInfo = self.StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
+		self.aShotInfo = self.StudioSettings.ShotInfo(1,1) # (1,1) = (Folder Creation, Print paths.)
 		self.iPBwidth = self.StudioSettings.ProjectInfo('ABA')[0][0]
 		self.iPBheight = self.StudioSettings.ProjectInfo('ABA')[0][1]
 		self.sRvPath = self.aShotInfo[6] + 'Active.rv'
@@ -931,7 +932,8 @@ class UIBuilder:
 				os.system(cmd)
 			except Exception as e:
 				print e
-			#print aPrint
+
+			print aPrint
 			self.PrintOnScreen(aPrint)
 
 		self.UIDisplayChecker()
@@ -982,7 +984,7 @@ class UIBuilder:
 			#self.dDict['LastCapture'] = sView
 			dToolInfo['LastCapture'] = sView
 
-			self.PrintOnScreen = ['a7a8af', 'Playblast done [%s]'%sView, 0x6b6c75]
+			self.PrintOnScreen(['a7a8af', 'Playblast done [%s]'%sView, 0x6b6c75])
 
 
 

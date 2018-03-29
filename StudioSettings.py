@@ -76,7 +76,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 	# Personal folder contains...
 	# *Personal Folder*/Project/*Project Name*/RV/*Shot Number*/
 	# *Personal Folder*/Project/*Project Name*/Setting/
-	aPersonalFolder = [ '/Project/%s/RV/%s%s/'%(sProject, sSeqNumber, sShotNumber),
+	aPersonalFolder = [ '/Project/%s/RV/%s_%s/'%(sProject, sSeqNumber, sShotNumber),
 						'/Project/%s/Setting/'%(sProject)]
 	sPlayBlastToolPath = sPersonalFolder + aPersonalFolder[0]
 	sSceneConfigFile = sPersonalFolder + aPersonalFolder[1]
@@ -170,8 +170,13 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 
 
 	# More variables assignment.
-	sPlayBlastSeqPath = sScenePath + aProductionPath[4] # where the actual playblast files go.
-	sScenePath += aProductionPath[0] # Keep this at the very end to have '/Scenes' added at the end
+	#vvv ?/?
+	sPlayBlastSeqPath = '/proj/%s/shots/%s/%s/motion/work/maya/%s/Images/PB'%(sProject,sSeqNumber, sShotNumber, sUser)
+	#sPlayBlastSeqPath = sScenePath + aProductionPath[4] # where the actual playblast files go.
+
+	# vvv ?/?
+	sScenePath = '/proj/%s/shots/%s/%s/motion/work/maya/%s/Scenes'%(sProject,sSeqNumber, sShotNumber, sUser)
+	#sScenePath += aProductionPath[0] # Keep this at the very end to have '/Scenes' added at the end
 
 	# Environment Folder
 	sEnvFolder = '/'.join(cmds.about(env = True).split('/')[:-1])
@@ -179,6 +184,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 	sGlobalScriptFolder = ''
 	sLocalScriptFolder = ''
 	sMayaScriptFolder = '/vol/transfer/dyabu/Scripts/mayaScrips/'
+	sNukeFileFolder = ''
 
 
 	# Collect all Variables.
@@ -196,6 +202,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 					sMayaScriptFolder,
 					sProjectConfigFile,
 					sSceneConfigFile,
+					sNukeFileFolder
 					])
 
 
@@ -224,6 +231,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 		print '[11] = sMayaScriptFolder : ', aReturn[11]
 		print '[12] = sProjectConfigFile : ', aReturn[12]
 		print '[13] = sSceneConfigFile : ', aReturn[13]
+		print '[14] = sNukeFileFolder: ', aReturn[14]
 		print '-------------------------------------'
 
 	sShotgunPage = ''

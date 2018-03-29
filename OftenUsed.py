@@ -1,9 +1,21 @@
-## [Often used] v1.3.1
+## [Often used] v1.3.2
 import maya.cmds as cmds
 import maya.mel as mel
 from functools import partial
 
 #TO STUDY
+#namedTuple # great for re-accessing and organizing. Not at list. cannot modify.
+import collections
+var = collections.namedTuple('test', ['name1','name2','name3'])
+var2 = var(val1, val2, val3)
+var2 = var(name1=val1, name2=val2, name3=val3, )
+print var2 # 'test'
+var2.name1 # 'val1'
+var2["name1"] # 'val1' # to test
+var2[0] # 'val1'
+
+
+
 cmds.fileDialog2()
 lines = [line.rstrip().rstrip('\n') for line in open(srcPath)]
 cmds.scriptJob()
@@ -62,6 +74,32 @@ for iIndex, x in enumerate(oSel[:]): # [:] makes it run a copy of oSel so you ca
 print [str(c+'.'+cmds.attributeName(c+'.'+b, l=True)) for a in 'msho' for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or [] for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True})]
 
 
+# Importing
+StudioSettings = __import__("StudioSettings")
+
+# Undo Chunk
+err = None
+cmds.undoInfo(openChunk=True)
+try:
+	stuff
+except Exception as err:
+	raise err
+finally:
+	cmds.undoInfo(closeChunk=True)
+	if err:
+		cmds.Undo()
+
+#vvv find workspace
+import redbox
+import hydra
+import os.path
+def getPath():
+	ws = redbox.Workspace.getShared().getOriginPath()
+	if ws:
+		return hydra.Hyref(ws).path
+	return os.path.expandvars('/$FILM/$TREE/$SCENE/SHOT')
+
+
 # Toggle Trick
 sphere.visibility = False == sphere.visibility
 # s.v = False == True (returns False)
@@ -70,6 +108,37 @@ sphere.visibility = False == sphere.visibility
 or
 iVal = abs(iVal-1)
 iVal = iVal * -1 + 1
+
+
+
+# os.path usage examples
+os.getcwd()
+
+ftitle, fext = os.path.splitext('/path/to/test1.txt')
+print ftitle, fext
+
+pritn os.path.relpath('root/path/to/test1.txt', '/root/path') # /to/test1.txt # Relative Path
+print os.path.realpath('/path/to/test1.txt') # REAL Path
+print os.path.basename('/path/to/test1.txt')
+print os.path.split('/path/to/test1.txt')
+print os.path.join('/path/to','test1.txt')
+print os.path.join(os.path.dirname(__file__), "file.txt")
+print  os.path.join('/path/to', *["css", "style.css"])
+print  os.path.join(*aList[:-1])
+
+["root", "two", "/stuff", "../thing"]
+root
+root/two
+/stuff
+/thing
+
+print os.path.expandvars('/$FILM/$TREE/$SCENE/$SHOT/$USER')
+os.environ["TREE"] = "tree"
+
+for env in os.environ:
+	sText = os.environ[env].lower()
+	if 'motion' in sText:
+		print env, os.environ[env]
 
 
 
