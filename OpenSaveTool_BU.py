@@ -1,4 +1,4 @@
-# Open/Save Tool v008.0.1
+# Open/Save Tool v008.0.2
 # Added opening without having a scene saved.
 # W V 1/1
 import maya.cmds as cmds
@@ -8,7 +8,9 @@ import os
 from datetime import datetime
 import getpass
 import imp
-
+# Custom Modules
+import StudioSettings
+import MayaBGColour
 
 
 
@@ -25,7 +27,6 @@ ata_2110_DY.v003.02.char1_publish.0003.ma'''
 Implement an error check to follow the format above. return an error if not following or/ to save a file with the format.
 '''
 
-
 ### Class Assignment ###
 
 class UIBuilder:
@@ -41,10 +42,13 @@ class UIBuilder:
 		self.sUser = getpass.getuser()
 		self.oUI = ''
 
+
 		# Get Studio Settings from external
-		self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
-		self.StudioSettings = imp.load_source('StudioSettings', '%s/StudioSettings.py'% self.sScriptPath)
-		self.aShotInfo = self.StudioSettings.ShotInfo(1,1) # (1,1) = (Folder Creation, Print paths.)
+
+		#self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
+		#StudioSettings = __import__("StudioSettings")
+		#self.StudioSettings = imp.load_source('StudioSettings', '%s/StudioSettings.py'% self.sScriptPath)
+		self.aShotInfo = StudioSettings.ShotInfo(1,1) # (1,1) = (Folder Creation, Print paths.)
 
 
 
@@ -89,7 +93,7 @@ class UIBuilder:
 		sSeqNum = self.aShotInfo[4]
 		sShotNum = self.aShotInfo[3]
 
-		print aCurrentShot
+		#print aCurrentShot
 
 
 
@@ -238,7 +242,7 @@ class UIBuilder:
 	def UIBGColour(self, sColour = 'Red'):
 		# Get Maya BG Colour from pallette.
 		sScriptName = 'MayaBGColour' # state the filename without '.py'
-		MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
+		#MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
 
 		oRGB = MayaBGColour.getBGColour()
 
@@ -305,7 +309,7 @@ class UIBuilder:
 						aAC.append( (self.Row[r][0][i], 'top', self.Row[r][2], self.Row[r-1][0][0]) )
 						aAC.append( (self.Row[r][0][i], 'left', self.Row[r][1], self.Row[r][0][i-1]) )
 		# Create Layout
-		print aAP
+		#print aAP
 
 
 		cmds.formLayout(self.oForm, edit = True, attachPosition = aAP)
@@ -496,7 +500,7 @@ class UIBuilder:
 			sFileName = self.sScenePath+'/'+sFileName
 
 			#sFileName = '/'.join(aAllPath)
-			print 'sFileName', sFileName
+			#print 'sFileName', sFileName
 			cmds.file(rename = sFileName)
 			cmds.file(save = True, type = 'mayaAscii')
 
@@ -673,17 +677,17 @@ class UIBuilder:
 
 
 	def Button_OpenFolder(self, *args):
-		self.StudioSettings.ShotInfo(0,1) # (1,1) = (Folder Creation, Print paths.)
+		StudioSettings.ShotInfo(0,1) # (1,1) = (Folder Creation, Print paths.)
 		aPath = self.GetScenePathFromCurrentEnvironment().split('/')
 		#aPath = self.sScenePath
 		sPath = '/'.join(aPath)
 
 		if not cmds.getModifiers() == 0:
-			self.StudioSettings.OSFileBrowserCommand(sPath)
+			StudioSettings.OSFileBrowserCommand(sPath)
 			aPrint = ['a7a8af', 'Opening Folder.', 0x6b6c75]
 
 		else:
-			self.StudioSettings.CopyToClipBoard(sPath)
+			StudioSettings.CopyToClipBoard(sPath)
 			aPrint = ['a7a8af', 'Copied to Clipboard.', 0x6b6c75]
 
 		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'botCenter', fade = True, fts = 7, ft = 'arial',bkc = aPrint[2] )
@@ -726,7 +730,7 @@ class UIBuilder:
 
 		else:
 			# cmds.file(sAllPath, o = True)
-			self.StudioSettings.OpenSceneCommand(sAllPath)
+			StudioSettings.OpenSceneCommand(sAllPath)
 
 
 	def MessageBox(self, Message, sPath, *args):
@@ -755,7 +759,7 @@ class UIBuilder:
 			mel.eval('incrementalSave;')
 
 		if iVal: # if not Cancelled.
-			self.StudioSettings.OpenSceneCommand(sPath)
+			StudioSettings.OpenSceneCommand(sPath)
 
 		if self.oWindow:
 			cmds.deleteUI(self.oWindow)
@@ -779,10 +783,10 @@ class UIBuilder:
 				aDropDown[2] = 1
 				aDropDown[3] = 1
 		elif iMenu == 2:
-			print 1
-			print self.aAllList[2][aDropDown[0]-1]
-			print self.aAllList[2][aDropDown[0]-1][aDropDown[1]-1]
-			print 0
+			#print 1
+			#print self.aAllList[2][aDropDown[0]-1]
+			#print self.aAllList[2][aDropDown[0]-1][aDropDown[1]-1]
+			#print 0
 			if len(self.aAllList[2][aDropDown[0]-1][aDropDown[1]-1]) <= aDropDown[2]:
 				aDropDown[2] = 1
 				aDropDown[3] = 1

@@ -1,4 +1,4 @@
-# Open/Save Tool v008.0.1
+# Open/Save Tool v008.0.2
 # Added opening without having a scene saved.
 # W V 1/1
 import maya.cmds as cmds
@@ -9,13 +9,9 @@ from datetime import datetime
 import getpass
 import imp
 
+# Custom Modules
 import StudioSettings
 import MayaBGColour
-
-
-
-
-
 
 '''Scene files should be written like these
 bt163_0235_DY.v000.01.Test.0001.ma
@@ -26,7 +22,6 @@ ata_2110_DY.v003.02.char1_publish.0003.ma'''
 '''
 Implement an error check to follow the format above. return an error if not following or/ to save a file with the format.
 '''
-
 
 ### Class Assignment ###
 
@@ -49,13 +44,17 @@ class UIBuilder:
 		#self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
 		#StudioSettings = __import__("StudioSettings")
 		#self.StudioSettings = imp.load_source('StudioSettings', '%s/StudioSettings.py'% self.sScriptPath)
-		self.aShotInfo = StudioSettings.ShotInfo(1,1) # (1,1) = (Folder Creation, Print paths.)
+
+		self.dShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
+		#print self.dShotInfo
+
 
 
 
 		# ScenePath stuffs
 
-		self.sScenePath = self.aShotInfo[1]
+		#self.sScenePath = self.aShotInfo[1]
+		self.sScenePath = self.dShotInfo['sScenePath']
 		#self.sShotPath = ''
 		self.sShotPath = '/'.join(self.sScenePath.split('/')[:-1])
 
@@ -91,8 +90,10 @@ class UIBuilder:
 		aCurrentShot = os.getcwd().split('/')
 		aShots = self.sShotPath.split('/')
 		#aShots = self.sScenePath.split('/')
-		sSeqNum = self.aShotInfo[4]
-		sShotNum = self.aShotInfo[3]
+		#sSeqNum = self.aShotInfo[4]
+		#sShotNum = self.aShotInfo[3]
+		sSeqNum = self.dShotInfo['sSeqNumber']
+		sShotNum = self.dShotInfo['sShotNumber']
 
 		#print aCurrentShot
 
@@ -679,16 +680,16 @@ class UIBuilder:
 
 	def Button_OpenFolder(self, *args):
 		StudioSettings.ShotInfo(0,1) # (1,1) = (Folder Creation, Print paths.)
-		aPath = self.GetScenePathFromCurrentEnvironment().split('/')
+		#aPath = self.GetScenePathFromCurrentEnvironment().split('/')
 		#aPath = self.sScenePath
-		sPath = '/'.join(aPath)
+		#sPath = '/'.join(aPath)
 
 		if not cmds.getModifiers() == 0:
-			StudioSettings.OSFileBrowserCommand(sPath)
+			StudioSettings.OSFileBrowserCommand(self.dShotInfo['sScenePath'])
 			aPrint = ['a7a8af', 'Opening Folder.', 0x6b6c75]
 
 		else:
-			StudioSettings.CopyToClipBoard(sPath)
+			StudioSettings.CopyToClipBoard(self.dShotInfo['sScenePath'])
 			aPrint = ['a7a8af', 'Copied to Clipboard.', 0x6b6c75]
 
 		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'botCenter', fade = True, fts = 7, ft = 'arial',bkc = aPrint[2] )
@@ -969,3 +970,4 @@ class UIBuilder:
 def main():
 
 	oIsolationUI = UIBuilder()
+	print '## OpenSaveTool.py'

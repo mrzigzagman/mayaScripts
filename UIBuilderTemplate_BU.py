@@ -1,10 +1,15 @@
-# UI BUILDER TEMPLATE .6.0.3
+# UI BUILDER TEMPLATE .6.1.3
+# Adding the MayaBGColour feature.
+
 
 import maya.cmds as cmds
 import maya.mel as mel
 import getpass
 import os
 from functools import partial
+
+## CUSTOM
+
 
 K = cmds.getModifiers()
 
@@ -14,7 +19,9 @@ class UIBuilder:
 
 	### Class FUnctions ###
 	def __init__(self):
+		self.Temp = ''
 		self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
+
 
 		self.oUI = 'test'
 		self.UISetWindow()
@@ -99,20 +106,31 @@ class UIBuilder:
 		self.Div.extend([iGap, iVerticalSpace])
 
 	def UIBGColour(self, sColour = 'Red'):
+		# Get Maya BG Colour from pallette.
+		sScriptName = 'MayaBGColour' # state the filename without '.py'
+		MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
+
+		oRGB = MayaBGColour.getBGColour()
+
 		sColour = sColour.lower()
+
+		# List all keys in lowerCase
 		dColour = { 'tone1':(1.000, 0.513, 0),
 					'tone2':(0.814, 0.521, 0.189),
 					'tone3':(0.745, 0.586, 0.341),
 					'tone4':(0.492, 0.430, 0.334),
 
 					# Need Revise on colour
+					'lightgray':(0.6, 0.6, 0.6),
+					'whitegray':(0.8, 0.8, 0.8),
 					'white':(1,1,1),
 					'darkgray':(0.3,0.3,0.3),
 					'gray':(0.4, 0.4, 0.4),
 					'blue':(0.8, 0.8, 0.8),
 					'yellow':(1.0, 1.0, 0.8),
 					'red':(0.7, 0.4, 0.4),
-					'lightgray':(0.7, 0.7, 0.7),}
+					'lightgray':(0.7, 0.7, 0.7),
+					'mayabg':oRGB,}
 
 		return dColour[sColour]
 
@@ -126,7 +144,7 @@ class UIBuilder:
 			cmds.deleteUI(self.oUI, window=True)
 
 		# Create window as formLayout
-		self.oWindow = cmds.window(self.oUI, mnb = False, mxb = False, title = self.oUI, sizeable = False)
+		self.oWindow = cmds.window(self.oUI, mnb = False, mxb = False, title = self.oUI, sizeable = False, bgc = self.UIBGColour('MayaBG'))
 		self.oForm = cmds.formLayout()
 
 		cmds.window(self.oWindow, edit=True, widthHeight = (self.Width, self.Height))

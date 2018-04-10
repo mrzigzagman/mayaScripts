@@ -1,3 +1,4 @@
+# AttrFilterTool v0.3.1
 import maya.cmds as cmds
 import imp
 #import json
@@ -14,7 +15,9 @@ class UIBuilder:
 
 	### Class FUnctions ###
 	def __init__(self):
+
 		self.Temp = ''
+
 		self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
 		# Keywords must start with Capital letters.
 		self.oFilter = None
@@ -22,34 +25,55 @@ class UIBuilder:
 								'Eye',
 								'Nose',
 								'Cheek',
+								'UpperLip',
 								'Lip',
+								'LowerLip',
 								'Jaw',
 								'Neck',
 								'Extra',]
 
-		self.dFilterList = {	'Brow': {'KeyWords':['*Brow*', '*Procerus*'],
+		# Keywords : Always with Caps. (smaller case tobe added later. with .lowercase() )
+		# Except : In Caps but, Without any '*'s (direct find of of words)
+		self.dFilterList = {	'Brow': {'KeyWords':['*Brow*', '*Procerus*', '*Supercilii*', '*Scalp*' ],
+										'Except': [],
 										'Colour':'gray',
 										'Key': 'Brow',},
-								'Eye':  {'KeyWords':['*Eye*',],
+								'Eye':  {'KeyWords':['*Eye*','*Pupil*', '*LidTightner*', '*Procerus*', '*Squint*', '*Lid*', '*Epicanthic*',  ],
+										'Except': ['Scalp'],
 										'Colour':'gray',
 										'Key': 'Eye',},
-								'Nose': {'KeyWords':['*Nose*',],
+								'Nose': {'KeyWords':['*Nose*', '*Nasolabial*', '*Nostril*', '*Philtrum*' ],
+										'Except': [],
 										'Colour':'gray',
 										'Key': 'Nose',},
 								'Cheek':{'KeyWords':['*Cheek*',],
 										'Colour':'gray',
+										'Except': [],
 										'Key': 'Cheek',},
-								'Lip':  {'KeyWords':['*Lip*',],
+								'UpperLip':  {'KeyWords':['*Lip*','*Upper*',],
 										'Colour':'gray',
+										'Except': ['Platysma', 'Brow'],
+										'Key': 'UpperLip',},
+								'Lip':  {'KeyWords':['*Lip*', '*Dimpler*', '*Grin*', '*Chin*', '*Pressor*', '*Funneler*'],
+										'Colour':'gray',
+										'Except': ['Nose'],
 										'Key': 'Lip',},
-								'Jaw':  {'KeyWords':['*Jaw*',],
+								'LowerLip':  {'KeyWords':['*Lip*','*Lower*', '*Chin*'],
 										'Colour':'gray',
+										'Except': ['Platysma', 'Brow'],
+										'Key': 'LowerLip',},
+								'Jaw':  {'KeyWords':['*Jaw*', '*Chin*'],
+										'Colour':'gray',
+										'Except': [],
 										'Key': 'Jaw',},
-								'Neck': {'KeyWords':['*Neck*'],
+								'Neck': {'KeyWords':['*Neck*', '*Swallow*', '*Throat*', '*Platysma*'],
 										'Colour':'gray',
+										'Except': [],
 										'Key': 'Neck',},
-								'Extra':{'KeyWords':['*Close*', ],
+
+								'Extra':{'KeyWords':['*Tongue*', '*Ears*' ],
 										'Colour':'gray',
+										'Except': [],
 										'Key': 'Extra',},
 								}
 		for key in self.dFilterList.keys():
@@ -63,7 +87,21 @@ class UIBuilder:
 				self.dFilterList[n].update({a:'b%s%s'%(n,a)})
 
 		self.aActiveButtons = []
+		self.colourTweak = 0
 
+
+
+		self.iChar = 0
+		self.aFaces = ['   ']
+		self.aPuppet = cmds.ls('*:FacialActionControl')
+		if self.aPuppet:
+			self.aFaces = []
+			for f in cmds.ls('*:FacialActionControl'):
+				self.aFaces.extend([str(s).replace(':chr',' ').replace('FacePuppet', '') for s in cmds.ls('%s:chr*'%f.split(':')[0]) if s.endswith('Puppet') ])
+		oSel = [str(s) for s in cmds.ls(sl = True, o = True)]
+		if oSel:
+			if oSel[0] in self.aPuppet:
+				self.iChar = self.aPuppet.index(oSel[0])
 
 		self.oUI = 'Facial Panel'
 		self.UISetWindow()
@@ -71,11 +109,10 @@ class UIBuilder:
 
 
 
-
 	def UISetWindow(self):
 		### Pre-Setup ###
-		self.Width = 150 # Total Width of Window in pixel (Default 320)
-		self.Height = 185 # Total Height of Window in pixel
+		self.Width = 130 # Total Width of Window in pixel (Default 320)
+		self.Height = 235 # Total Height of Window in pixel
 
 		self.iBoarderW = 10 # Default Empty Pixels around window for Width
 		self.iBoarderH = 10 # Default Empty Pixels around window for Height
@@ -174,8 +211,12 @@ class UIBuilder:
 					'red':(0.7, 0.4, 0.4),
 					'lightgray':(0.6, 0.6, 0.6),
 					'whitegray':(0.8, 0.8, 0.8),
+
+					'lightred':(0.7, 0.5, 0.5),
+					'brightred':(0.9, 0.7, 0.7),
+
 					'bluetone':(0.725, 0.921, 1.000),
-					'bluegray':(0.525, 0.721, 0.800),
+					'bluegray':(0.425, 0.621, 0.700),
 
 
 					# Need Revise on colour
@@ -246,28 +287,41 @@ class UIBuilder:
 					cmds textField(), ] ; self.UIAddRow(aRow)
 		'''
 
-
-
-
 		aRow = []
 
 		self.iRowHeight = 15
 
+
 		## Row
 		self.UIDivision([1], None, 0); aRow = [
-		cmds.button('bChar',label = 'FACE chr Dr Strange', h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour('darkgray'),c = partial(self.UIButton_CharSwitch)),
+		cmds.text('bChar1',label = self.aFaces[self.iChar].split(' ')[0], h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour('MayaBG')),
+		]; self.UIAddRow(aRow)
+
+		## Row
+		self.UIDivision([1], None, 0); aRow = [
+		cmds.button('bChar2',label = self.aFaces[self.iChar].split(' ')[1], h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour('bluetone'),c = partial(self.UIButton_CharSwitch)),
 		]; self.UIAddRow(aRow)
 
 
+
 		for i, r in enumerate(self.aCategoryList):
-			if i == 0:
+			s = r
+			if i in [0]:
 				iH = 10
+			elif i in [4]:
+				iH = 2
+				s = ''
+			elif i in [6]:
+				s = ''
+			elif i in [7]:
+				iH = 2
 			else:
 				iH = 0
+
 			## Row
 			self.UIDivision([1,2,1], None, iH); aRow = [
 			cmds.button('b%sR'%r,label = '', h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour(self.dFilterList[r]['Colour']),c = partial(self.UIButton_Filter, i, 'R')),
-			cmds.button('b%sB'%r,label = r, h = self.iRowHeight, w = self.Div[0][1], bgc = self.UIBGColour(self.dFilterList[r]['Colour']),c = partial(self.UIButton_Filter, i, 'B')),
+			cmds.button('b%sB'%r,label = s, h = self.iRowHeight, w = self.Div[0][1], bgc = self.UIBGColour(self.dFilterList[r]['Colour']),c = partial(self.UIButton_Filter, i, 'B')),
 			cmds.button('b%sL'%r,label = '', h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour(self.dFilterList[r]['Colour']),c = partial(self.UIButton_Filter, i, 'L')),
 			]; self.UIAddRow(aRow)
 
@@ -282,20 +336,41 @@ class UIBuilder:
 		self.UIRefresh()
 
 	def	UIButton_CharSwitch(self, *args):
-		print 'character'
+		sModel = cmds.button('bChar2', q = True, l = True)
+
+
+		if sModel in self.aFaces:
+			self.iChar = self.aFaces.index(sModel)
+
+
+
+
+		if self.iChar == len(self.aFaces)-1:
+			self.iChar = 0
+		else:
+			self.iChar += 1
+
+		cmds.text('bChar1', e = True, l = self.aFaces[self.iChar].split(' ')[0])
+		cmds.button('bChar2', e = True, l = self.aFaces[self.iChar].split(' ')[1])
+		try:
+			cmds.select(self.aPuppet[self.iChar], r = True)
+		except:
+			pass
+
+
 
 
 	def UIRefresh(self):
 		aColour = ['bluegray','bluetone']
 		if self.colourTweak == 1:
-			aColour = ['lightgray','whitegray']
+			aColour = ['lightred','brightred']
 
 		for k in self.aCategoryList:
 			for s in ['R','B','L']:
 				cmds.button(self.dFilterList[k][s], e = True, bgc = self.UIBGColour('gray'))
 
 		for a in self.aActiveButtons:
-			cmds.button(a, e = True, bgc = self.UIBGColour(aColour[0]))
+			cmds.button(a, e = True, bgc = self.UIBGColour(aColour[1]))
 			cmds.button(a[:-1]+'B', e = True, bgc = self.UIBGColour(aColour[0]))
 
 		for a in self.aActiveButtons:
@@ -308,9 +383,12 @@ class UIBuilder:
 	def	UIButton_Filter(self, iIndex, sSide, *args):
 		K = cmds.getModifiers()
 
+		if K == 0:
+			self.aActiveButtons = []
+
 		b = self.dFilterList[self.aCategoryList[iIndex]][sSide]
 		# Logic to set self.aActiveButtons for UI colour and filter objects
-		if  K == 0:
+		if  K in [0, 8]:
 			self.colourTweak = 0
 			if b[-1] == 'B':
 				if b[:-1]+'B' in self.aActiveButtons:
@@ -318,12 +396,12 @@ class UIBuilder:
 				elif b[:-1]+'R' in self.aActiveButtons:
 					self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['R'])
 					self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
-
 				elif b[:-1]+'L' in self.aActiveButtons:
 					self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['L'])
 					self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
 				else:
 					self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['B'])
+
 			elif b[-1] == 'R':
 				if b[:-1]+'B' in self.aActiveButtons:
 					self.aActiveButtons.remove(self.dFilterList[self.aCategoryList[iIndex]]['B'])
@@ -347,48 +425,74 @@ class UIBuilder:
 				else:
 					self.aActiveButtons.append(self.dFilterList[self.aCategoryList[iIndex]]['L'])
 
-		#elif K == 1:
-			#print self.colourTweak
+
+
+
 		else:
 			if self.colourTweak: # 0 = without Tweaks / 1 = with tweaks.
 				self.colourTweak = 0
 			else:
 				self.colourTweak = 1
 
-
+		#print self.aActiveButtons
 
 
 		### Create a List of Keywords to be Filtered. ###
 		self.oFilter = cmds.itemFilterAttr(bns = 'Seach for an attr that NEVER EXIST')
 
-		aTweaks = cmds.listAttr(r = True, st = ['*Tweak*', '*tweak*']) or []
-		oTweaks = cmds.itemFilterAttr(bns = aTweaks)
+		#aTweaks = cmds.listAttr(r = True, st = ['*Tweak*', '*tweak*']) or []
+		#oTweaks = cmds.itemFilterAttr(bns = aTweaks)
+
 
 		if self.aActiveButtons:
 			for a in self.aActiveButtons:
+
 				aKeyWords = self.dFilterList[a[1:-1]]['KeyWords']
 				aKeyWordList = cmds.listAttr(r = True, st = aKeyWords) or []
 
+				aExcept = self.dFilterList[a[1:-1]]['Except']
+
+
 				for k in aKeyWordList[:]:
 					iRemove = 0
-					if K == 0: # Remove Tweaks unless Modifiers are activated.
+					if K in [0, 8]: # Remove Tweaks unless Modifiers are activated.
 						if 'tweak' in k.lower():
 							iRemove = 1
-					#else:
-						#if not 'tweak' in k.lower():
-							#iRemove = 1
+					else:
+						if self.colourTweak == 0:
+							if 'tweak' in k.lower():
+								iRemove = 1
+					if 'upper' in a.lower():
+						if not 'upper' in k.lower():
+							iRemove = 1
+					if 'lower' in a.lower():
+						if not 'lower' in k.lower():
+							iRemove = 1
+
+					if aExcept:
+						for e in aExcept:
+							if e.lower() in k.lower():
+								aKeyWordList.remove(k)
 
 					if not a[-1] == 'B':
 						if not k[-1] == sSide:
 							iRemove = 1
+					if 'fr_' in k.lower():
+						iRemove = 0
 
-					if iRemove == 1:
-						aKeyWordList.remove(k)
+
+
+
+					if iRemove:
+						if k in aKeyWordList:
+							aKeyWordList.remove(k)
 
 
 				oKeyWordList = cmds.itemFilterAttr(bns = aKeyWordList)
 				self.oFilter = cmds.itemFilterAttr(union = (self.oFilter, oKeyWordList))
-				print aKeyWordList
+
+
+		#print aKeyWordList
 
 
 		if self.aActiveButtons == []:
@@ -398,59 +502,6 @@ class UIBuilder:
 
 
 		self.UIRefresh()
-
-
-	def UIButton_Bigger(self, iHeight, *args):
-		print 'Bigger'
-		self.Height = iRowHeight
-		self.UIReBuild()
-
-	def UIButton_Smaller(self, iHeight, *args):
-		print 'Smaller'
-		self.Height = iRowHeight
-		self.UIReBuild()
-
-	def FloatSlider_Changed(self, sGrp, *args):
-		print 'Float Slider Changed %s'% sGrp
-		cmds.floatSliderGrp(sGrp, e = True, v = 1)
-
-	def Dropdown_Changed(self, i, *args):
-		print 'Dropped down! as : %s' % i
-
-
-	### UI CREATION FUNCTIONS ###
-	def AddDropMenu(self, sName, fWidth, iLen, sLabel, CC, aList, iMenu):
-		print 1
-		'''
-		A custom function to add optionMenu(...) to UIAddRow() WITH menus already attached.
-
-		AddDropMenu(self, sName, FWidth, iLen, sLabel, CC, aList, iMenu)
-		sName : Unique ID Name to refer back to edit later.
-		fWidth : Width of the menu item
-		iLen : The number of selectable menus. (To be used as : if only one: gray out and lock it.)
-		sLabel : label of the menu = '' nothing. don't need in this case.
-		CC: Change Command : to run when menu is changed.
-		aList : list of menus to display
-
-		iMenu : to be used as index of aDropMenu to store what's listing currently. (Later to be deleted all and re-created at change command)
-		'''
-
-		iMenu -= 1 # Be used as index of aDropMenu
-
-		# Set the dropmenu to gray if there is only one menu. (no need to change anyways.)
-		if iLen == 1:
-			iLen = False
-		else:
-			iLen = True
-
-		oCMD = cmds.optionMenu(sName, label = sLabel, en = iLen, w = fWidth, cc = CC)
-
-		# Add selectable menus to above optionMenu.
-		for l in aList:
-			cmds.menuItem(l, label = l)
-			#aDropMenu[iMenu].append(l)
-
-		return oCMD
 
 
 def main():

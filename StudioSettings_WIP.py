@@ -1,15 +1,16 @@
 # ALL Custom Settings to be created here.
-# Version 0.2.1
+# Version 0.2.2
 # Adding MAYA UI BG colour tool. Creating setting folder and text.
 import json
 import maya.cmds as cmds
 import getpass
 import os.path
 import os
-	#-----
-def ProjectInfo(sProj = ''):
 
-	### CUSTOMIZE - Playblast Size
+def ProjectInfo(sProj = ''):
+	# Project base settings
+
+	### CUSTOMIZE - Playblast Size ###
 	dPlayBlastSize = {	''   :[0, 0],
 						'ABA':[1092, 576],}
 
@@ -19,6 +20,7 @@ def ProjectInfo(sProj = ''):
 	aProjectInfo[0] = dPlayBlastSize[sProj]
 
 	return aProjectInfo
+
 
 def ShotInfo(iFolder = 0, iPrint = 0):
 	''' Adjusting Studio differences of Folder Hiearchy to get Shot Numbers and Paths and etc.
@@ -31,8 +33,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 
 	### CUSTOMIZE - Setting ###
 	iAvoidRunFromNewScene = 0 # Studio Dependant : Switch this on if os.getcwd does not return. Proj Seq Shot info.
-
-	#-----
+	###
 
 	aReturn = [] # The main var to collect info.
 	SSV_sUser = getpass.getuser() # get username
@@ -40,12 +41,14 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 	## Checking Scene Paths
 	# The goal is to prepare SSV_sScenePath with or without having a scene opened.
 	# sScenePath should be the Folder where the Custom folders to be populated. Not where the .ma files are.
+	# SSV_sScenePath shold be the folder where scene files to be saved.
 
-	sScenePath = os.path.realpath(cmds.file(q = True, sn = True)) or '' # Getting ScenePath if new scene, returns null.
-	if not sScenePath:
-		# Getting the environment.
-		# Essential to get [Proj] [Seq] [Shot] in order for tools to run in a freshly opened maya.
-		sScenePath = os.path.realpath(os.getcwd()) # vvv ?/?
+
+	## Getting the environment.
+	# Essential to get [Proj] [Seq] [Shot] in order for tools to run in a freshly opened maya.
+	sScenePath = os.path.realpath(os.getcwd()) # vvv ?/?
+	#sScenePath = os.path.realpath(cmds.file(q = True, sn = True)) # Getting ScenePath if new scene, returns null.
+
 
 	aScenePath = sScenePath.split('/')
 	SSV_sProject = aScenePath[2]
@@ -53,67 +56,21 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 	SSV_sShotNumber = aScenePath[5]
 
 
-	# CUSTOMIZE - set path to where custom folders to be populated. [Scenes] [Images] [Export]
-	SSV_sScenePath = os.path.join(sScenePath, 'motion/work/maya' ,SSV_sUser)
-	aScenePath = SSV_sScenePath.split('/')
+	### CUSTOMIZE - set path to where custom folders to be populated. [Scenes] [Images] [Export] ###
+	sScenePath = os.path.join(sScenePath, 'motion/work/maya' ,SSV_sUser)
+	###
+	aScenePath = sScenePath.split('/')
 
-
-
-	#aScenePath = SSV_sScenePath.split('/')
-
-	'''
-	if SSV_sUser in SSV_sScenePath: # If run from a saved Scene. # /proj/(proj)/shots/(seq)/(shot)/motion/work/maya/dyabu/Scene
-		aScenePath = SSV_sScenePath.split('/')
-		SSV_sScenePath = os.path.join(aScenePath[:-2])
-
-	elif SSV_sScenePath == '': # If run in a freshly opended scene: # None
-		if not iAvoidRunFromNewScene:
-
-			sShotPath = os.path.realpath(os.getcwd()) # Getting the environment. Essential to get this including Proj, Seq, Shot numbers.
-			# CUSTOMIZE - set path to where custom folders to be populated.
-			SSV_sScenePath = os.path.join(sShotPath, 'motion/work/maya' ,SSV_sUser)
-			aScenePath = SSV_sScenePath.split('/')
-
-
-			#aShotPath = sShotPath.split('/')
-			#sShotPath = '/'.join(aShotPath)
-			#SSV_sScenePath = '%s/motion/work/maya/%s'%(sShotPath, SSV_sUser)
-		else:
-			print 'Might cause an error. havnt test this condition.'
-			SSV_sScenePath = 'ERROR!!! iAvoidRunFromNewScene is 1'
-
-	'''
-	######################
-
-
-
-	# Variable Assignments
-	### CUSTOMIZE HERE - Project, Seq Number, Shot Number ###
-	#SSV_sProject = SSV_sScenePath.split('/')[2]
-
-	#SSV_sProject = aScenePath[2]
-	#SSV_sSeqNumber = aScenePath[4]
-	#SSV_sShotNumber = aScenePath[5]
-
-
-	aCreateFolder = []
-	### CUSTOMIZE HERE - Personal Folder path (where .rv files are saved under project folders.) ###
+	### CUSTOMIZE - Personal Folder path (where .rv files are saved under project folders.) ###
 	SSV_sPersonalFolder = '/usr/home/%s'%SSV_sUser # Initial Path to the folder.
+	###
 
-	## Custom tool setting all across other tools. # Shoun't Have to Modiy...
+
+	## Tool setting all across other tools. # Shoun't Have to Modiy...
 	SSV_sPlayBlastToolPath = os.path.join(SSV_sPersonalFolder, 'Project/%s/RV/%s_%s'%(SSV_sProject, SSV_sSeqNumber, SSV_sShotNumber))
 	SSV_sSceneConfigFile = os.path.join(SSV_sPersonalFolder, 'Project/%s/Setting'%(SSV_sProject))
 
-	# *Personal Folder*/Project/*Project Name*/RV/*Shot Number*/
-	# *Personal Folder*/Project/*Project Name*/Setting/
-	#aPersonalFolder = [ '/Project/%s/RV/%s_%s/'%(SSV_sProject, SSV_sSeqNumber, SSV_sShotNumber),
-						#'/Project/%s/Setting/'%(SSV_sProject)]
-
-	#SSV_sPlayBlastToolPath = SSV_sPersonalFolder + aPersonalFolder[0]
-	#SSV_sSceneConfigFile = SSV_sPersonalFolder + aPersonalFolder[1]
-
-	#for a in aPersonalFolder:
-		#aCreateFolder.append(SSV_sPersonalFolder + a)
+	aCreateFolder = []
 	aCreateFolder.append(SSV_sPlayBlastToolPath)
 	aCreateFolder.append(SSV_sSceneConfigFile)
 
@@ -136,12 +93,12 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 						'cf',] # marked as [-1] do not change this.
 
 	for a in aProductionPath:
-		#print SSV_sScenePath, a
-		aCreateFolder.append(os.path.join(SSV_sScenePath, a))
+		#print sScenePath, a
+		aCreateFolder.append(os.path.join(sScenePath, a))
 
-	SSV_sSceneConfigFile = os.path.join(SSV_sScenePath, aProductionPath[-1] , 'SceneConfig.json')
+	SSV_sSceneConfigFile = os.path.join(sScenePath, aProductionPath[-1] , 'SceneConfig.json')
 
-	### Folder Creation ###
+	## Folder Creation
 	if iAvoidRunFromNewScene:
 		print 'This will only work from a saved scene.'
 	else:
@@ -188,6 +145,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 												},
 					}
 
+		print SSV_sProjectConfigFile
 
 		if not os.path.isfile(SSV_sProjectConfigFile):
 			with open(SSV_sProjectConfigFile, 'w') as oFile:
@@ -195,39 +153,25 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 				json.dump(dContent, oFile, indent = 4)
 
 		# Create SCENE config files.
-
 		dContent = {}
 		if not os.path.isfile(SSV_sSceneConfigFile):
 			with open(SSV_sSceneConfigFile, 'w') as oFile:
 				json.dump(dContent, oFile, indent = 4)
 
 
-
-	# More variables assignment.
-	#SSV_sPlayBlastSeqPath = '/proj/%s/shots/%s/%s/motion/work/maya/%s/Images/PB'%(SSV_sProject,SSV_sSeqNumber, SSV_sShotNumber, SSV_sUser)
+	# Othere Paths
 	SSV_sPlayBlastSeqPath = os.path.join(sScenePath, aProductionPath[4])
-
-	## RE-WRITE sScenePath WITH 'Scenes'Here
-	#SSV_sScenePath = '/proj/%s/shots/%s/%s/motion/work/maya/%s/Scenes'%(SSV_sProject,SSV_sSeqNumber, SSV_sShotNumber, SSV_sUser)
-	#SSV_sScenePath = os.path.join(sScenePath, 'Scenes')
-
-
-
-	# Environment Folder
-	#SSV_sEnvFolder = '/'.join(cmds.about(env = True).split('/')[:-1])
 	SSV_sEnvFolder = os.path.realpath(os.path.split(cmds.about(env = True))[0])
-
 
 	#Scripts Folders
 	SSV_sGlobalScriptFolder = '- Not Specified'
 	SSV_sLocalScriptFolder = '/vol/transfer/dyabu/Scripts/mayaScripts'
 	SSV_sMayaEnvScriptFolder = os.path.join(SSV_sEnvFolder, 'scripts')
-	SSV_sNukeFileFolder = os.path.join(SSV_sScenePath, aProductionPath[4])
+	SSV_sNukeFileFolder = os.path.join(sScenePath, aProductionPath[4])
 
+	# Scene Path
+	SSV_sScenePath = os.path.join(sScenePath, aProductionPath[0])
 
-
-
-	SSV_sScenePath = os.path.join(SSV_sScenePath, aProductionPath[0])
 	# Collect all Variables.
 	aReturn.extend([SSV_sUser,
 					SSV_sScenePath,
@@ -246,13 +190,11 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 					SSV_sNukeFileFolder
 					])
 
-
 	# Path Existance Check
 	for i, path in enumerate(aReturn[:]):
 		if '/' in path:
 			if not os.path.exists(path):
 				aReturn[i] = 'Path Does Not Exist'
-
 
 
 	if iPrint:
@@ -275,9 +217,6 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 		print '[14] = SSV_sNukeFileFolder: ', aReturn[14]
 		print '-------------------------------------'
 
-	sShotgunPage = ''
-	sShotWebPage = ''
-
 	return aReturn
 
 def OSFileBrowserCommand(sPath):
@@ -299,7 +238,6 @@ def StudioProductionFrameRange():
 		from mo.wm.utils.sceneRange import setSceneRange; setSceneRange(handles = True)
 
 	return iStudioTool
-
 
 def OpenSceneCommand(sPath, bForce = False):
 	# Load Scene command

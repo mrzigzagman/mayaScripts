@@ -547,9 +547,9 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 
 			if g == aGroup[0]:
 				cmds.addAttr(aGroup[0], shortName = 'notes', dataType = 'string') # Activate Notes Attributes to store json
-				StudioSettings.AnimToolAttributes(aGroup[0], dDict) # Store dDict
+				StudioSettings.SceneInfoStorage(aGroup[0], dDict) # Store dDict
 
-	dDict = StudioSettings.AnimToolAttributes(aGroup[0]) # Get dDict
+	dDict = StudioSettings.SceneInfoStorage(aGroup[0]) # Get dDict
 
 
 	iType = dDict['ABACustomCamViews'] + 1
@@ -586,7 +586,7 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 
 	PrintOnScreen(aPrint)
 	dDict['ABACustomCamViews'] = iType
-	StudioSettings.AnimToolAttributes(aGroup[0], dDict) # Store dDict
+	StudioSettings.SceneInfoStorage(aGroup[0], dDict) # Store dDict
 
 	cmds.select(oSel, r = True)
 

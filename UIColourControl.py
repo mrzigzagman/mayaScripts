@@ -10,7 +10,63 @@ dShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths
 sShotNumber = dShotInfo['sSeqNumber']+dShotInfo['sShotNumber']
 sProjectConfigFile = dShotInfo['sProjectConfigFile']
 
-def main():
+def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], R = 0.1, G = 0.1, B = 0.1):
+	aRGB[0] += R
+	aRGB[1] += G
+	aRGB[2] += B
+	return aRGB
+
+
+def getRGBvalues(R = 255, G = 255, B = 255):
+	fValues = []
+	for v in [R, G, B]:
+		fValues.append(round(v/255.0, 4))
+
+	return fValues
+def inViewMessageColourPreset(keyword = 'Blue', text = 'TEST'):
+	dColour = {
+	'Green': ['6bad64', text, 0x6c756b],
+	'Red': ['d8766c', text, 0x756b6b],
+	'Blue': ['9bbcf2', text, 0x485872],
+	'Gray': ['a7a8af', text, 0x6b6c75],
+	}
+	return dColour[keyword]
+
+
+def keywordColour(sColour = 'Red'):
+	# Get Maya BG Colour from pallette.
+	#sScriptName = 'MayaBGColour' # state the filename without '.py'
+	#MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
+
+	#oRGB = MayaBGColour.getBGColour()
+	oRGB = getMayaBGColour()
+
+	sColour = sColour.lower()
+
+	# List all keys in lowerCase
+	dColour = { 'tone1':(1.000, 0.513, 0),
+				'tone2':(0.814, 0.521, 0.189),
+				'tone3':(0.745, 0.586, 0.341),
+				'tone4':(0.492, 0.430, 0.334),
+
+				# Need Revise on colour
+				'lightgray':(0.6, 0.6, 0.6),
+				'whitegray':(0.8, 0.8, 0.8),
+				'white':(1,1,1),
+				'darkgray':(0.3,0.3,0.3),
+				'gray':(0.4, 0.4, 0.4),
+				'blue':(0.8, 0.8, 0.8),
+				'yellow':(1.0, 1.0, 0.8),
+				'red':(1, 0, 0),
+				'lightgray':(0.7, 0.7, 0.7),
+				'mayabg':oRGB,}
+
+	return dColour[sColour]
+
+
+
+
+def setMayaBGColour():
 
 	##sScriptName = 'StudioSettings' # state the filename without '.py'
 	##sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts/%s.py'%sScriptName
@@ -75,7 +131,7 @@ def main():
 	cmds.refresh(f = True)
 
 
-def getBGColour():
+def getMayaBGColour():
 	##sScriptName = 'StudioSettings' # state the filename without '.py'
 	##sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts/%s.py'%sScriptName
 	##StudioSettings = imp.load_source(sScriptName, sScriptPath)

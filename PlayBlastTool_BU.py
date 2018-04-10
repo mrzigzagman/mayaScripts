@@ -1,4 +1,4 @@
-# PlayBlast Tool v10.2.2
+# PlayBlast Tool v10.2.1
 # Define capture folders.
 # vvv 3/3
 
@@ -10,39 +10,31 @@ import shutil
 import getpass
 import imp
 
-# Custom
-import StudioSettings
-import MayaBGColour
+### Class Assignment ###
+# UIBuilder Template v006.0.2
 
 ### Class Assignment ###
-class UIBuilder: # UIBuilder Template v006.0.2
+class UIBuilder:
 
 	### Class FUnctions ###
 	def __init__(self):
-		self.Temp = None
+		self.Temp = ''
 		self.sTool = 'PBTool' # Tool name node under 'Anim_Tool'
 
 		# Importing Studio Settings
-		#self.sScriptNamStudioSettings' # remove '.py'
-		#self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
-		#StudioSettings = imp.load_source(self.sScriptName, '%s/%s.py'%(self.sScriptPath,self.sScriptName))
+		self.sScriptName = 'StudioSettings' # remove '.py'
+		self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
+		self.StudioSettings = imp.load_source(self.sScriptName, '%s/%s.py'%(self.sScriptPath,self.sScriptName))
 
-		# Getting info uStudioSettings
-		#self.aShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
-		#self.dShotInfo = aShotInfo[15]
-		self.dShotInfo = StudioSettings.ShotInfo(1,0)
-		aPBInfo = StudioSettings.ProjectInfo('ABA')[0]
-		self.iPBwidth = aPBInfo[0]
-		self.iPBheight = aPBInfo[1]
-		#self.sRvPath = self.aShotInfo[6] + 'Active.rv'
-		#self.sRvPath = self.dShotInfo['sPlayBlastToolPath'] + 'Active.rv'
-		self.sRvPath = self.dShotInfo['sPlayBlastToolPath'] + '_.rv'
-
-		#self.oUI = 'PB_%s_%s' % (self.aShotInfo[4], self.aShotInfo[3]) # Watch out when this is only numbers, the tool fails.
-		self.oUI = 'PB_%s_%s' % (self.dShotInfo['sSeqNumber'], self.dShotInfo['sShotNumber']) # Watch out when this is only numbers, the tool fails.
+		# Getting info using StudioSettings
+		self.aShotInfo = self.StudioSettings.ShotInfo(1,1) # (1,1) = (Folder Creation, Print paths.)
+		self.iPBwidth = self.StudioSettings.ProjectInfo('ABA')[0][0]
+		self.iPBheight = self.StudioSettings.ProjectInfo('ABA')[0][1]
+		self.sRvPath = self.aShotInfo[6] + 'Active.rv'
+		self.oUI = 'PB_%s_%s' % (self.aShotInfo[4], self.aShotInfo[3]) # Watch out when this is only numbers, the tool fails.
 
 		# Setting up tool custom dictionary for storage
-		self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+		self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 		if not self.dDict:
 			self.dDict = {  '1': '1',
 							'2': '-',
@@ -70,10 +62,14 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		self.dDict['ConvertToolFrom'] = [0,0,0,0,0]
 		self.dDict['ConvertToolTo'] =[0,0,0,0,0]
 
-		StudioSettings.SceneInfoStorage(self.sTool, self.dDict) # Store dDict
+		self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict) # Store dDict
+
+
 
 		self.UISetWindow()
+
 		self.UICreate()
+
 		self.UIDisplayChecker()
 
 
@@ -87,6 +83,10 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		self.iBoarderH = 10 # Default Empty Pixels around window for Height
 
 		self.iRowHeight = 20
+		# self. sCurrentPanel = cmds.getPanel(withFocus = True)
+
+
+		### Initial Setup ###
 
 	def UIReBuild(self):
 		'''Re-Create all UI'''
@@ -96,7 +96,8 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		self.UICreate()
 
 	def UIConvertTool(self, sType, *args):
-		self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+		self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
+		#self.dDict['ConvertToolTo'][0] = 0
 		iNukeConversion = 0
 
 		sPickedFile = ''
@@ -110,7 +111,9 @@ class UIBuilder: # UIBuilder Template v006.0.2
 			if sPickedFile:
 				self.dDict['ConvertToolFrom'][0] = 1
 				self.dDict['PickedFile'] = sPickedFile
-				StudioSettings.SceneInfoStorage(self.sTool, self.dDict) # Store dDict
+				self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict) # Store dDict
+
+				# cmds.button()
 
 
 		elif sType.isdigit(): # From : 1-4, To : 5-8
@@ -118,7 +121,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 			if iIndex <5: # From: 1-4
 				sVar = 'ConvertToolFrom'
-				#self.aShotInfo[7]
+				self.aShotInfo[7]
 				iVal = 1
 
 				self.dDict['ConvertToolTo'][iIndex] = 0
@@ -142,22 +145,23 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 				# Empty destination Folder
 				iTarget =  self.dDict['ConvertToolTo'][1:].index(1)+1
-				#sTargetPath = self.aShotInfo[7] + '/%s/' % iTarget
-				sTargetPath = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/' % iTarget
+				sTargetPath = self.aShotInfo[7] + '/%s/' % iTarget
 
 
 				if os.path.exists(sTargetPath):
 					shutil.rmtree(sTargetPath) # delete .../PB/3/
+					#print 'delete ', sTargetPath
 
 				if not os.path.exists(sTargetPath):
 					os.makedirs(sTargetPath) # create .../PB/3/
+					#print 'create ', sTargetPath
 
 
 
 				# Get SourcePath
 				if self.dDict['ConvertToolFrom'][0]: #if user selecting files:
 
-					self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+					self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 					if self.dDict['PickedFile']:
 						if not self.dDict['PickedFile'][0].endswith('jpg'):
 							iNukeConversion = 1
@@ -169,9 +173,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 				else: # if not picked ( if sSourcePath is none)
 					iSource = self.dDict['ConvertToolFrom'].index(1)
-					#sSourcePath = self.aShotInfo[7] + '/%s/' % iSource
-					sSourcePath = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/' % iSource
-					#dShotInfo['sPlayBlastSeqPath']
+					sSourcePath = self.aShotInfo[7] + '/%s/' % iSource
 
 
 
@@ -186,31 +188,44 @@ class UIBuilder: # UIBuilder Template v006.0.2
 					if f.startswith(aFileName[0]):
 						aTransferFiles.append(f)
 				aTransferFiles.sort()
+				# print aTransferFiles
 
 
 				sFileName = 'PlayBlast_%s'%iTarget
 				for tf in aTransferFiles:
 					aName = tf.split('.')
 					aName[0] = sFileName
-
+					# print sSourcePath + tf
+					# print sTargetPath+'.'.join(aName)
 					shutil.copy(sSourcePath+'/' + tf, sTargetPath+'/'+'.'.join(aName))
+
 
 				if iNukeConversion:
 					print 'start nuke'
 
 
+
+
+
+
+
+
+
+
 		iCheck = sum(self.dDict['ConvertToolFrom']) + sum(self.dDict['ConvertToolTo'][1:])
+		# print self.dDict['ConvertToolTo'][1:]
 		if iCheck == 2:
 			self.dDict['ConvertToolTo'][0] = 1
 		else:
 			self.dDict['ConvertToolTo'][0] = 0
 
 
-		StudioSettings.SceneInfoStorage(self.sTool, self.dDict)
+
+		self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
 		self.UIConvertTool_DisplayChecker()
 
 	def UIConvertTool_DisplayChecker(self):
-		self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+		self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 		aList = ['oUIConvertPick','oUIConvert1','oUIConvert2','oUIConvert3','oUIConvert4']
 		aList2 = ['oUIConvertIT','oUIConvert5','oUIConvert6','oUIConvert7','oUIConvert8']
 		aColour = ['darkgray', 'tone5']
@@ -242,7 +257,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 
 
-			StudioSettings.SceneInfoStorage(self.sTool, self.dDict)
+			self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
 
 
 
@@ -302,6 +317,9 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 	def UIBGColour(self, sColour = 'red'):
 		# Get Maya BG Colour from pallette.
+		sScriptName = 'MayaBGColour' # state the filename without '.py'
+		MayaBGColour = imp.load_source(sScriptName, '%s/MayaBGColour.py'%self.sScriptPath)
+
 		oRGB = MayaBGColour.getBGColour()
 
 
@@ -542,21 +560,16 @@ class UIBuilder: # UIBuilder Template v006.0.2
 	def UIButton_OpenFolder(self, sFolder, *args):
 		K = cmds.getModifiers()
 		if sFolder == 'rv':
-			#sPath = self.aShotInfo[6]
-			sPath = self.dShotInfo['sPlayBlastToolPath']
+			sPath = self.aShotInfo[6]
 		elif sFolder == 'seq':
-			##sPath = self.aShotInfo[7]
-			sPath = self.dShotInfo['sPlayBlastSeqPath']
-
-
-
+			sPath = self.aShotInfo[7]
 
 		if K:
-			StudioSettings.OSFileBrowserCommand(sPath)
+			self.StudioSettings.OSFileBrowserCommand(sPath)
 			aPrint = ['a7a8f', 'Opening a FileBrowser.', 0x6b6c75]
 
 		else:
-			StudioSettings.CopyToClipBoard(sPath)
+			self.StudioSettings.CopyToClipBoard(sPath)
 			aPrint = ['a7a8af', 'Copied Path to Clipboard.', 0x6b6c75]
 
 		self.PrintOnScreen(aPrint)
@@ -621,7 +634,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 
 	def UIButton_ExtraToolExpand(self, sTool, *args):
-		self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+		self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 
 		# Set height of each custom tools.
 		dTools = {  'CalcTool' : 62,
@@ -637,7 +650,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 				self.Height += dTools[tool]
 				self.dDict[tool] = 1 - self.dDict[tool]
 
-		StudioSettings.SceneInfoStorage(self.sTool, self.dDict)
+		self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
 		self.UIReBuild()
 		self.UIDisplayChecker()
 		self.UIConvertTool_DisplayChecker()
@@ -653,7 +666,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		cmds.button('oUIStartButton', e = True, label = iIn)
 		cmds.button('oUIEndButton', e = True, label = iOut)
 
-		StudioSettings.SceneInfoStorage(self.sTool, self.dDict)
+		self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
 		self.UIDisplayChecker()
 
 	def UIButton_RVInfoToMaya(self, sType, *args):
@@ -666,6 +679,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		# aContent[1] : RV Region
 		# aContent[2] : RV Marked Frames
 		# aContent[3] : Current Frame
+		#self.PrintOnScreen(['a7a8af', 'Testing Here', 0x6b6c75 ])
 
 		if aContent:
 			if sType == 'Range':
@@ -688,7 +702,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 					if cmds.objExists(oTick):
 						cmds.delete(oTick)
 
-					#self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+					#self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 					self.dDict['markedFrames'] = aContent[2]
 
 
@@ -696,7 +710,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 					cmds.group(name = oTick, em = True, p = self.sTool)
 
 					cmds.setKeyframe( oTick, attribute = 'translateX', t = self.dDict['markedFrames'])
-					StudioSettings.SceneInfoStorage(self.sTool, self.dDict)
+					self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
 
 	def GetActiveRVinfo(self):
 
@@ -758,15 +772,16 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		return aContent
 
 	def UIDisplayChecker(self):
-		self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
-
+		self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 		# Frame Count
+
 		iCurrentStart = self.dDict['currentStartFrame']
 		iCurrentEnd = self.dDict['currentEndFrame']
 		iProdStart = self.dDict['prodStartFrame']
 		iProdEnd = self.dDict['prodEndFrame']
 
 		cmds.text('oUIFrameCout', e = True, l = str(iCurrentEnd - iCurrentStart + 1)+ ' f')
+
 
 		# Frames Section
 		aTones = ['tone5', 'tone5']
@@ -781,6 +796,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		cmds.button('oUIStartButton', e = True, bgc = self.UIBGColour(aTones[0]))
 		# if aTones[1]:
 		cmds.button('oUIEndButton', e = True, bgc = self.UIBGColour(aTones[1]))
+
 
 
 		# Views Section
@@ -813,13 +829,13 @@ class UIBuilder: # UIBuilder Template v006.0.2
 	def UIButton_ProdRange(self, *args):
 
 
-		iRange = StudioSettings.StudioProductionFrameRange()
+		iRange = self.StudioSettings.StudioProductionFrameRange()
 		iIn = int(cmds.playbackOptions(q = True, minTime = True))
 		iOut = int(cmds.playbackOptions(q = True, maxTime = True))
 		if iRange:
 			cmds.button('oUIProdButton', e = True, bgc = self.UIBGColour('tone2'))
 		else:
-			self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+			self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 			cmds.button('oUIProdButton', e = True, bgc = self.UIBGColour('tone3'))
 
 		self.dDict['currentStartFrame'] = iIn
@@ -832,17 +848,18 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 
 
-		StudioSettings.SceneInfoStorage(self.sTool, self.dDict) # To update the info
+		self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict) # To update the info
 		self.UIDisplayChecker()
 
 	def UIButton_InOut(self, sInOut, *args):
-		self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+		self.dDict = self.StudioSettings.AnimToolAttributes(self.sTool)
 
 		iCurrent = int(cmds.currentTime(q = True))
 		if sInOut == 'Start':
 			self.dDict['currentStartFrame'] = iCurrent
 			cmds.button('oUIStartButton', e = True, label = iCurrent)
 
+			#print iCurrent, self.dDict['currentEndFrame']
 			# if End frame is before current frame.
 			if self.dDict['currentEndFrame'] <= iCurrent:
 				self.dDict['currentEndFrame'] = iCurrent + 1
@@ -853,6 +870,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 			self.dDict['currentEndFrame'] = iCurrent
 			cmds.button('oUIEndButton', e = True, label = iCurrent)
 
+			#print iCurrent, self.dDict['currentStartFrame']
 			# if End frame is before current frame.
 			if self.dDict['currentStartFrame'] >= iCurrent:
 				self.dDict['currentStartFrame'] = iCurrent - 1
@@ -870,7 +888,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		else:
 			pass
 
-		StudioSettings.SceneInfoStorage(self.sTool, self.dDict)
+		self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
 
 		self.UIDisplayChecker()
 
@@ -881,7 +899,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 			if not os.path.exists(self.sRvPath):
 				K = 100
 			if K: # If with any Modifiers, Create a fresh Active.rv. (deletes all markings etc.)
-				dInfo = StudioSettings.SceneInfoStorage(self.sTool) # Check function for more info.
+				dInfo = self.StudioSettings.AnimToolAttributes(self.sTool) # Check function for more info.
 
 				sIn = dInfo['prodStartFrame']
 				if sIn == None:
@@ -894,10 +912,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 				aPath = [None, None, None, None, ]
 				for i in range(0, len(aPath)):
-					#aPath[i] = self.aShotInfo[7] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg'%(str(i+1), str(i+1), sIn, sOut)
-					aPath[i] = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg'%(str(i+1), str(i+1), sIn, sOut)
-
-
+					aPath[i] = self.aShotInfo[7] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg'%(str(i+1), str(i+1), sIn, sOut)
 
 				sContent = self.CreateLatestQuadRvFile(aPath)
 
@@ -913,11 +928,12 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 			try:
 				cmd = 'rv %s &' % (self.sRvPath)
+				#print cmd
 				os.system(cmd)
 			except Exception as e:
 				print e
 
-
+			print aPrint
 			self.PrintOnScreen(aPrint)
 
 		self.UIDisplayChecker()
@@ -927,7 +943,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		K = cmds.getModifiers()
 		sGrayOut = 'darkgray'
 
-		dToolInfo = StudioSettings.SceneInfoStorage(self.sTool)
+		dToolInfo = self.StudioSettings.AnimToolAttributes(self.sTool)
 		sLabel = dToolInfo[sView]
 
 
@@ -943,7 +959,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 
 
-			StudioSettings.SceneInfoStorage(self.sTool, dToolInfo)
+			self.StudioSettings.AnimToolAttributes(self.sTool, dToolInfo)
 
 		else:
 			if not sLabel == '-':
@@ -954,13 +970,12 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		# PlayBlast time!
 		if iStartCapture:
 
-			sCapturePath = self.dShotInfo['sPlayBlastSeqPath']+'/'+sView+'/PlayBlast_%s'%sView
-			#sCapturePath = self.aShotInfo[7]+'/'+sView+'/PlayBlast_%s'%sView
+			sCapturePath = self.aShotInfo[7]+'/'+sView+'/PlayBlast_%s'%sView
 			sIn = dToolInfo['currentStartFrame']
 			sOut = dToolInfo['currentEndFrame']
 
 			cmds.playblast(format = 'image', filename = sCapturePath, st = int(sIn), et = int(sOut), sequenceTime = 0, clearCache = 1, viewer = 0, showOrnaments = 1, offScreen = True, fp = 4, percent = 100, compression = "jpg", quality = 70, fo = True, wh = [self.iPBwidth, self.iPBheight])
-
+			print '[1092, 576]'
 
 			cmds.warning('Capture Process All Finished')
 			#self.UIDisplayChecker()
@@ -973,7 +988,9 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 
 
-		StudioSettings.SceneInfoStorage(self.sTool, dToolInfo)
+		#self.StudioSettings.AnimToolAttributes(self.sTool, self.dDict)
+		#print 'sView', dToolInfo
+		self.StudioSettings.AnimToolAttributes(self.sTool, dToolInfo)
 
 		self.UIConvertTool_DisplayChecker()
 		self.UIDisplayChecker()
@@ -1029,7 +1046,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 	def CreateLatestQuadRvFile(self, aPath):
 		sContent = None
-
+		print 'aPath', aPath
 		if aPath:
 			sContent = '''GTOa (3)
 
