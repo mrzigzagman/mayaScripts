@@ -10,6 +10,39 @@ dShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths
 sShotNumber = dShotInfo['sSeqNumber']+dShotInfo['sShotNumber']
 sProjectConfigFile = dShotInfo['sProjectConfigFile']
 
+def faceColour(sColour = 'default'):
+
+	dColour = {
+	'eyeBalls':[102, 0, 0],
+	'eyeLids':[170, 0, 0],
+	'brows':[170, 170, 0],
+	'cheeks':[0, 85, 0],
+	'nose':[170, 85, 0],
+	'lipSticky':[71, 71, 71],
+	'lipZipper':[151, 151, 151],
+	'jaw':[255, 255, 255],
+	'lipCorners':[0, 75, 110],
+	'lipsPart':[0, 125, 178],
+	'lipsFold':[84, 218, 255],
+	'puff':[38, 0, 59],
+	'throat':[96, 48, 0],
+	'tongue':[255, 85, 0],
+	'ears':[0, 28, 0],
+	'neck':[85, 85, 0],
+	'gravity':[0, 0, 0],
+	'eyeLidTweaks':[170, 93, 93],
+	'browTweaks':[255, 255, 127],
+	'cheekTweaks':[120, 120, 120],
+	'noseTweak':[255, 170, 0],
+	'lipTweaks':[174, 108, 255],
+	'default':[68, 68, 68] # 68/ 2.6666 # text 0.8
+	}
+
+	if sColour == 'getDict':
+		return dColour
+	else:
+		return getRGBvalues(dColour[sColour])
+
 def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], R = 0.1, G = 0.1, B = 0.1):
 	aRGB[0] += R
 	aRGB[1] += G
@@ -17,12 +50,12 @@ def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], R = 0.1, G = 0.1, B = 0.1):
 	return aRGB
 
 
-def getRGBvalues(R = 255, G = 255, B = 255):
-	fValues = []
-	for v in [R, G, B]:
-		fValues.append(round(v/255.0, 4))
+def getRGBvalues(aRGB):
+	aValues = []
+	for v in aRGB:
+		aValues.append(round(v/255.0, 4))
 
-	return fValues
+	return aValues
 def inViewMessageColourPreset(keyword = 'Blue', text = 'TEST'):
 	dColour = {
 	'Green': ['6bad64', text, 0x6c756b],

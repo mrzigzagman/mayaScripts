@@ -15,7 +15,7 @@ K = cmds.getModifiers()
 
 
 ### Class Assignment ###
-class UIBuilder:
+class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 
 	### Class FUnctions ###
 	def __init__(self):

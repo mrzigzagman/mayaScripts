@@ -9,18 +9,9 @@ import UIWindowControl
 
 K = cmds.getModifiers()
 
-def main():
-	oWin = UIWindowControl.UIBuilder()
-
-	oWin.oUI = 'TEMP_UI_WINDOW'
-	oWin.Width = 450 # Total Width of Window in pixel (Default 320)
-	oWin.Height = 1590 # Total Height of Window in pixel
-	oWin.iRowHeight = 25
-
-	UIReBuild()
-
 
 def	UIReBuild():
+	global oWin
 	oWin.UIPrepare()
 	UILayout()
 	oWin.UICreate()
@@ -60,7 +51,7 @@ def UILayout():
 	cmds.button(label = 'SHOTSUB', h = oWin.iRowHeight, w = oWin.Div[0][2], bgc = (0,.1,.1), enableBackground = False),
 	cmds.text(l = '', h = oWin.iRowHeight, w = oWin.Div[0][3]),
 	cmds.button(label = 'Saved', h = oWin.iRowHeight, w = oWin.Div[0][4], bgc = (0,.1,.1), enableBackground = False ),
-	AddDropMenu('DropdownMenu', oWin.Div[0][5], 4, 'drop', partial(Dropdown_Changed, 1), ['1','2','3','4'], 1),
+	AddDropMenu('DropdownMenu', oWin.Div[0][5], 4, 'drop', Dropdown_Changed, ['test1','test2','test3','test4'], 1),
 	cmds.text(l = '', h = oWin.iRowHeight, w = oWin.Div[0][6]),
 	cmds.button(label = 'Range', h = oWin.iRowHeight, w = oWin.Div[0][7], bgc = (0,.1,.1), enableBackground = False ),
 	]; oWin.UIAddRow(aRow)
@@ -68,7 +59,7 @@ def UILayout():
 	## Row
 	oWin.UIDivision([1,1]); aRow = [
 	cmds.floatSliderGrp('floatSlider1', label = 'Size', field = True, h = oWin.iRowHeight, w = oWin.Div[0][0], cw = [1, 25], cc = partial(FloatSlider_Changed, 'floatSlider1'), minValue = 0.1, maxValue = 2.0, fieldMinValue = 0.1, fieldMaxValue = 2.0, value = 1),
-	cmds.floatSliderGrp('floatSlider2', label = 'Size', field = True, h = oWin.iRowHeight, w = oWin.Div[0][0], cw = [1,25], cc = partial(FloatSlider_Changed, 'floatSlider1'), minValue = 0.1, maxValue = 2.0, fieldMinValue = 0.1, fieldMaxValue = 2.0, value = 1),
+	cmds.floatSliderGrp('floatSlider2', label = 'Size', field = True, h = oWin.iRowHeight, w = oWin.Div[0][0], cw = [1,25], cc = partial(FloatSlider_Changed, 'floatSlider2'), minValue = 0.1, maxValue = 2.0, fieldMinValue = 0.1, fieldMaxValue = 2.0, value = 1),
 	]; oWin.UIAddRow(aRow)
 
 	## Row
@@ -99,10 +90,17 @@ def UIButton_Smaller(iHeight, *args):
 
 def FloatSlider_Changed(sGrp, *args):
 	print 'Float Slider Changed %s'% sGrp
-	cmds.floatSliderGrp(sGrp, e = True, v = 1)
+	print cmds.floatSliderGrp(sGrp, q = True, v = True)
 
-def Dropdown_Changed(i, *args):
-	print 'Dropped down! as : %s' % i
+	if sGrp.endswith('1'):
+		cmds.floatSliderGrp(sGrp, e = True, v = 1)
+
+
+
+
+
+def Dropdown_Changed(*args):
+	print cmds.optionMenu('DropdownMenu', q = True, value = True)
 
 
 ### UI CREATION FUNCTIONS ###
@@ -137,3 +135,18 @@ def AddDropMenu(sName, fWidth, iLen, sLabel, CC, aList, iMenu):
 		#aDropMenu[iMenu].append(l)
 
 	return oCMD
+
+
+def main():
+	global oWin
+	oWin = UIWindowControl.UIBuilder()
+
+	oWin.oUI = 'TEMP_UI_WINDOW'
+	oWin.Width = 450 # Total Width of Window in pixel (Default 320)
+	oWin.Height = 1590 # Total Height of Window in pixel
+	oWin.iRowHeight = 25
+
+	UIReBuild()
+
+if __name__ == '__main__':
+	 main()

@@ -1,4 +1,7 @@
-# AttrFilterTool v0.3.1
+# AttrFilterTool v0.3.2
+# Select the faceCtrl when filter is checked.
+# Add a button to select Eye Controller.
+
 import maya.cmds as cmds
 import imp
 #import json
@@ -11,7 +14,7 @@ K = cmds.getModifiers()
 
 
 ### Class Assignment ###
-class UIBuilder:
+class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 
 	### Class FUnctions ###
 	def __init__(self):
@@ -293,8 +296,9 @@ class UIBuilder:
 
 
 		## Row
-		self.UIDivision([1], None, 0); aRow = [
+		self.UIDivision([3,1], None, 0); aRow = [
 		cmds.text('bChar1',label = self.aFaces[self.iChar].split(' ')[0], h = self.iRowHeight, w = self.Div[0][0], bgc = self.UIBGColour('MayaBG')),
+		cmds.button('bEyeCtl',label = 'Eye', h = self.iRowHeight, w = self.Div[0][1], bgc = self.UIBGColour('bluetone'),c = partial(self.UIButton_EyeCtl)),
 		]; self.UIAddRow(aRow)
 
 		## Row
@@ -344,7 +348,6 @@ class UIBuilder:
 
 
 
-
 		if self.iChar == len(self.aFaces)-1:
 			self.iChar = 0
 		else:
@@ -358,6 +361,18 @@ class UIBuilder:
 			pass
 
 
+	def UIButton_EyeCtl(self, *args):
+
+		oModel = cmds.text('bChar1', q = True, l = True)
+		#print cmds.button('bChar2', q = True, l = True)
+		#iLocal = cmds.getAttr('%s:eye_convergence_ctrl|%s:eye_settingsShape.local_world')
+		cmds.select('%s:eye_settingsShape'%oModel)
+		iLocal = cmds.getAttr('%s:eye_settingsShape.local_world' % oModel)
+
+		if iLocal:
+			cmds.select('%s:eye_world_ctrl'%oModel, r = True)
+		else:
+			cmds.select('%s:eye_local_ctrl'%oModel, r = True)
 
 
 	def UIRefresh(self):
@@ -381,6 +396,14 @@ class UIBuilder:
 
 
 	def	UIButton_Filter(self, iIndex, sSide, *args):
+
+		# Re-Select Face Control
+		sModel = cmds.button('bChar2', q = True, l = True)
+		if sModel in self.aFaces:
+			self.iChar = self.aFaces.index(sModel)
+		cmds.select(self.aPuppet[self.iChar], r = True)
+
+
 		K = cmds.getModifiers()
 
 		if K == 0:

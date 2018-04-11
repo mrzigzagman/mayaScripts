@@ -1,4 +1,4 @@
-# AttrFilterTool v0.3.2
+# AttrFilterTool v0.4.0
 # Select the faceCtrl when filter is checked.
 # Add a button to select Eye Controller.
 
@@ -10,11 +10,15 @@ import imp
 #import os
 from functools import partial
 
+# CUSTOM
+import UIColourControl
+reload(UIColourControl)
+
 K = cmds.getModifiers()
 
 
 ### Class Assignment ###
-class UIBuilder:
+class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 
 	### Class FUnctions ###
 	def __init__(self):
@@ -355,10 +359,38 @@ class UIBuilder:
 
 		cmds.text('bChar1', e = True, l = self.aFaces[self.iChar].split(' ')[0])
 		cmds.button('bChar2', e = True, l = self.aFaces[self.iChar].split(' ')[1])
+
+		iColour = 0
 		try:
 			cmds.select(self.aPuppet[self.iChar], r = True)
+			iColour = 1
 		except:
 			pass
+
+
+		if iColour: # Set Colour in ChannelBox
+
+			# remove non-Facial attributes
+			aAttrList = cmds.listAttr(self.aPuppet[self.iChar], v = True)
+			for a in aAttrList[:]:
+				if not a.startswith('fr_'):
+					aAttrList.remove(a)
+				else:
+					break
+
+			# for all attributes for facial:
+			sColour = 'default'
+			dColour = UIColourControl.faceColour('getDict')
+			for a in aAttrList:
+				sKey = a[3:]
+				if sKey in dColour.keys():
+					sColour = sKey
+				# NOT DONE HERE...
+				#cmds.channelBox(self.aPuppet[self.iChar], attrRegex = a, attrColor = UIColourControl.offsetRGBvalues(dColour[sColour], -0.2, -0.2, -0.2), attrBgColor = dColour[sColour])
+				#cmds.channelBox(self.aPuppet[self.iChar], attrRegex = a, attrBgColor = dColour[sColour])
+
+				#print a,
+			print self.aPuppet[self.iChar]
 
 
 	def UIButton_EyeCtl(self, *args):
@@ -463,9 +495,6 @@ class UIBuilder:
 		### Create a List of Keywords to be Filtered. ###
 		self.oFilter = cmds.itemFilterAttr(bns = 'Seach for an attr that NEVER EXIST')
 
-		#aTweaks = cmds.listAttr(r = True, st = ['*Tweak*', '*tweak*']) or []
-		#oTweaks = cmds.itemFilterAttr(bns = aTweaks)
-
 
 		if self.aActiveButtons:
 			for a in self.aActiveButtons:
@@ -515,7 +544,7 @@ class UIBuilder:
 				self.oFilter = cmds.itemFilterAttr(union = (self.oFilter, oKeyWordList))
 
 
-		#print aKeyWordList
+		print aKeyWordList
 
 
 		if self.aActiveButtons == []:
