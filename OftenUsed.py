@@ -111,6 +111,11 @@ iVal = iVal * -1 + 1
 
 
 
+# Split path to a list
+import os
+path = os.path.normpath(path)
+path.split(os.sep)
+
 # os.path usage examples
 os.getcwd()
 
@@ -183,7 +188,7 @@ with open(sSceneConfigFile, 'w') as oFile:
 with open(sProjectConfigFile, 'w') as oFile:
 	json.dump(dDict, oFile, indent = 4) # dump w/o returns nothing.
 
-# List all unde scene root
+# List all under scene root
 ls(assembly = True)
 
 # Run external .py

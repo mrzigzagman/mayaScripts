@@ -19,18 +19,18 @@ sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts/%s.py' % sScriptName
 StudioSettings = imp.load_source(sScriptName, sScriptPath)
 
 # Getting info using StudioSettings
-aShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
+dShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
 
 # vvv paths 1/1
-dShotInfo = {
-	"FilePath": "/%s/shots/%s/%s/motion/work/maya/dyabu/Images/Nuke/TheNukeFile.nk"%(aShotInfo[2], aShotInfo[4], aShotInfo[3]),
-	'ShotNumber': "  %s %s"%(aShotInfo[4], aShotInfo[3])
+dShot = {
+	"FilePath": "/%s/shots/%s/%s/motion/work/maya/dyabu/Images/Nuke/TheNukeFile.nk"%(dShotInfo['sProject'], dShotInfo['sSeqNumber'], dShotInfo['sShotNumber']),
+	'ShotNumber': "  %s %s"%(dShotInfo['sSeqNumber'], dShotInfo['sShotNumber'])
 	}
 
 def main():
-	if not os.path.exists(dShotInfo['FilePath']):
+	if not os.path.exists(dShot['FilePath']):
 		# Using sys.argv to pass info of shot number to NukeCreator2.py.
-		command = 'nuke -t -- "%s" "%s"' % (fNukeCreatorFile, base64.b64encode(pickle.dumps(dShotInfo))) # import pickle & base64
+		command = 'nuke -t -- "%s" "%s"' % (fNukeCreatorFile, base64.b64encode(pickle.dumps(dShot))) # import pickle & base64
 		# -t : runs in terminal mode
 		# -- : tells nuke that not to pick up information from that point on.
 		# anything after -- will be stored in sys.argv
@@ -58,7 +58,7 @@ def main():
 			pass
 
 
-	if os.path.exists(dShotInfo['FilePath']):
-		os.system('nuke %s &' % dShotInfo['FilePath'])
+	if os.path.exists(dShot['FilePath']):
+		os.system('nuke %s &' % dShot['FilePath'])
 		aPrint = ['9bbcf2', 'Opening NUKE', 0x485872] # Blue
 		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'topCenter', fade = True, fts = 12, ft = 'arial',bkc = aPrint[2] )

@@ -13,44 +13,55 @@ sProjectConfigFile = dShotInfo['sProjectConfigFile']
 def faceColour(sColour = 'default'):
 
 	dColour = {
-	'eyeBalls':[102, 0, 0],
-	'eyeLids':[170, 0, 0],
-	'brows':[170, 170, 0],
-	'cheeks':[0, 85, 0],
-	'nose':[170, 85, 0],
-	'lipSticky':[71, 71, 71],
-	'lipZipper':[151, 151, 151],
-	'jaw':[255, 255, 255],
-	'lipCorners':[0, 75, 110],
-	'lipsPart':[0, 125, 178],
-	'lipsFold':[84, 218, 255],
-	'puff':[38, 0, 59],
-	'throat':[96, 48, 0],
-	'tongue':[255, 85, 0],
-	'ears':[0, 28, 0],
-	'neck':[85, 85, 0],
-	'gravity':[0, 0, 0],
-	'eyeLidTweaks':[170, 93, 93],
-	'browTweaks':[255, 255, 127],
-	'cheekTweaks':[120, 120, 120],
-	'noseTweak':[255, 170, 0],
-	'lipTweaks':[174, 108, 255],
-	'default':[68, 68, 68] # 68/ 2.6666 # text 0.8
+	'eyeBalls':[[102, 0, 0], [230, 184, 184]],
+	'eyeLids':[[170, 0, 0],[255, 218, 218]],
+	'brows':[[170, 170, 0], [50, 50, 0]],
+	'cheeks':[[0, 85, 0], [178, 255, 178]],
+	'nose':[[170, 85, 0], [255, 221, 186]],
+	'lipSticky':[[71, 71, 71], [169, 169, 169]],
+	'lipZipper':[[151, 151, 151], [40, 40, 40]],
+	'jaw':[[255, 255, 255], [65, 65, 65]],
+	'lipCorners':[[0, 75, 110], [141, 230, 255]],
+	'lipsPart':[[0, 125, 178], [203, 239, 255]],
+	'lipsFold':[[84, 218, 255], [0, 45, 64]],
+	'puff':[[38, 0, 59], [155, 108, 181]],
+	'throat':[[96, 48, 0], [221, 186, 152]],
+	'tongue':[[255, 85, 0], [255, 228, 215]],
+	'ears':[[0, 28, 0], [95, 161, 95]],
+	'neck':[[85, 85, 0], [191, 191, 0]],
+	'gravity':[[0, 0, 0], [79, 79, 79]],
+	'eyeLidTweaks':[[170, 93, 93], [255, 220, 220]],
+	'browTweaks':[[255, 255, 127], [70, 70, 0]],
+	'cheekTweaks':[[120, 120, 120], [226, 226, 226]],
+	'noseTweak':[[255, 170, 0], [50, 34, 0]],
+	'lipTweaks':[[174, 108, 255], [245, 237, 255]],
+	'default':[[68, 68, 68], [255, 255, 255]], # 68/ 2.6666 # text 0.8
 	}
+
 
 	if sColour == 'getDict':
 		return dColour
+	elif sColour == 'getFont':
+		return dFont
 	else:
-		return getRGBvalues(dColour[sColour])
+		if sColour in dColour.keys():
+			return getRGBvalues(dColour[sColour])
+		else:
+			return getRGBvalues(dColour['default'])
 
-def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], R = 0.1, G = 0.1, B = 0.1):
-	aRGB[0] += R
-	aRGB[1] += G
-	aRGB[2] += B
+
+def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], aOffset = [0.2, 0.2, 0.2]):
+	for i in range(0, 3):
+		iVal = round(aRGB[i] + aOffset[i], 4)
+		if iVal >= 1.0:
+			iVal = 1.0
+		elif iVal <= 0.0:
+			iVal =0.0
+		aRGB[i] = iVal
 	return aRGB
 
 
-def getRGBvalues(aRGB):
+def getRGBvalues(aRGB): # from 255 to 1.0
 	aValues = []
 	for v in aRGB:
 		aValues.append(round(v/255.0, 4))
@@ -74,25 +85,51 @@ def keywordColour(sColour = 'Red'):
 	#oRGB = MayaBGColour.getBGColour()
 	oRGB = getMayaBGColour()
 
-	sColour = sColour.lower()
-
 	# List all keys in lowerCase
-	dColour = { 'tone1':(1.000, 0.513, 0),
-				'tone2':(0.814, 0.521, 0.189),
-				'tone3':(0.745, 0.586, 0.341),
-				'tone4':(0.492, 0.430, 0.334),
+	dColour = { 'MayaBG':oRGB,
 
-				# Need Revise on colour
-				'lightgray':(0.6, 0.6, 0.6),
-				'whitegray':(0.8, 0.8, 0.8),
-				'white':(1,1,1),
-				'darkgray':(0.3,0.3,0.3),
-				'gray':(0.4, 0.4, 0.4),
-				'blue':(0.8, 0.8, 0.8),
-				'yellow':(1.0, 1.0, 0.8),
-				'red':(1, 0, 0),
-				'lightgray':(0.7, 0.7, 0.7),
-				'mayabg':oRGB,}
+				'Tone1':(0.822, 0.967, 1.000),
+				'Tone2':(0.349, 0.447, 0.537),
+				'Tone3':(0.231, 0.384, 0.525),
+				'Tone4':(0.188, 0.231, 0.271),
+				'Tone5':(0.224, 0.420, 0.502),
+				'Tone6':(0.224, 0.369, 0.502),
+				'Tone7':(0.224, 0.298, 0.502),
+
+
+				# PlayBlastTool Colours
+				'CaptureTone1':(0.8196, 0.9020, 1.000),
+				'CaptureTone2':(0.6471, 0.7608, 0.8941),
+				'CaptureTone3':(0.2275, 0.2471, 0.2706),
+
+				'RangeButton' : (0.356, 0.341, 0.478),
+				'CurrentButton' : (0.3411, 0.3411, 0.478),
+				'MarkedButton' : (0.407, 0.3411, 0.478),
+
+				'ProdButton' : (0.2196, 0.2667, 0.3255),
+				'_rvButton' : (0.2196, 0.2667, 0.3255),
+
+				'ConvertToolButtonOn' : (0.2392, 0.3294, 0.4000),
+				'ConvertToolButtonOff' : (0.2275, 0.2510, 0.2706),
+				'CalcToolButtonOn' : (0.2392, 0.4000, 0.2627),
+				'CalcToolButtonOff' : (0.2275, 0.2706, 0.2314),
+				'AnnotateToolButtonOn' : (0.2392, 0.4000, 0.4000),
+				'AnnotateToolButtonOff' : (0.2275, 0.2706, 0.2706),
+
+				'SeqButton' : (0.1882, 0.2627, 0.2706),
+				'RvButton' : (0.1216, 0.2471, 0.2706),
+
+
+				# General
+				'LightGray':(0.6, 0.6, 0.6),
+				'WhiteGray':(0.8, 0.8, 0.8),
+				'White':(1,1,1),
+				'DarkGray':(0.3,0.3,0.3),
+				'Gray':(0.4, 0.4, 0.4),
+				'Blue':(0.8, 0.8, 0.8),
+				'Yellow':(1.0, 1.0, 0.8),
+				'Red':(1, 0, 0),
+				'LightGray':(0.7, 0.7, 0.7),}
 
 	return dColour[sColour]
 

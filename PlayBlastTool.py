@@ -1,5 +1,5 @@
-# PlayBlast Tool v10.2.2
-# Define capture folders.
+# PlayBlast Tool v10.3.0
+# Re Construct with New UIBuilderTemplate
 # vvv 3/3
 
 import maya.cmds as cmds

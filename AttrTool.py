@@ -244,6 +244,8 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 		# Delete Current UI
 		if cmds. window(self.oUI, exists = True):
 			cmds.deleteUI(self.oUI, window=True)
+		if self.oUI in cmds.lsUI( windows=True ):
+			cmds.deleteUI(self.oUI, window = True)
 
 		# Create window as formLayout
 		self.oWindow = cmds.window(self.oUI, mnb = False, mxb = False, title = self.oUI, sizeable = False, bgc = self.UIBGColour('MayaBG'))
@@ -367,7 +369,8 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 		except:
 			pass
 
-
+		# Set Colour in Channel Box... Crashes Maya for unknown reason...
+		'''
 		if iColour: # Set Colour in ChannelBox
 
 			# remove non-Facial attributes
@@ -385,13 +388,15 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 				sKey = a[3:]
 				if sKey in dColour.keys():
 					sColour = sKey
-				# NOT DONE HERE...
-				#cmds.channelBox(self.aPuppet[self.iChar], attrRegex = a, attrColor = UIColourControl.offsetRGBvalues(dColour[sColour], -0.2, -0.2, -0.2), attrBgColor = dColour[sColour])
-				#cmds.channelBox(self.aPuppet[self.iChar], attrRegex = a, attrBgColor = dColour[sColour])
 
-				#print a,
-			print self.aPuppet[self.iChar]
-
+				if 'fr_' in a:
+					aColour = UIColourControl.getRGBvalues(dColour[sColour])
+					#cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = aColour)#, attrBgColor = dColour[sColour])
+					cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = aColour)
+				else:
+					pass
+					#cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = [1.0, 0.8, 0.8])#, attrBGColor = [0.25, 0.25, 0.25])
+					'''
 
 	def UIButton_EyeCtl(self, *args):
 
@@ -544,7 +549,7 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 				self.oFilter = cmds.itemFilterAttr(union = (self.oFilter, oKeyWordList))
 
 
-		print aKeyWordList
+
 
 
 		if self.aActiveButtons == []:

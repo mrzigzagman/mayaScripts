@@ -1,4 +1,4 @@
-# AttrFilterTool v0.3.2
+# AttrFilterTool v0.4.0
 # Select the faceCtrl when filter is checked.
 # Add a button to select Eye Controller.
 
@@ -9,6 +9,10 @@ import imp
 #import getpass
 #import os
 from functools import partial
+
+# CUSTOM
+import UIColourControl
+reload(UIColourControl)
 
 K = cmds.getModifiers()
 
@@ -240,6 +244,8 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 		# Delete Current UI
 		if cmds. window(self.oUI, exists = True):
 			cmds.deleteUI(self.oUI, window=True)
+		if self.oUI in cmds.lsUI( windows=True ):
+			cmds.deleteUI(self.oUI, window = True)
 
 		# Create window as formLayout
 		self.oWindow = cmds.window(self.oUI, mnb = False, mxb = False, title = self.oUI, sizeable = False, bgc = self.UIBGColour('MayaBG'))
@@ -355,11 +361,42 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 
 		cmds.text('bChar1', e = True, l = self.aFaces[self.iChar].split(' ')[0])
 		cmds.button('bChar2', e = True, l = self.aFaces[self.iChar].split(' ')[1])
+
+		iColour = 0
 		try:
 			cmds.select(self.aPuppet[self.iChar], r = True)
+			iColour = 1
 		except:
 			pass
 
+		# Set Colour in Channel Box... Crashes Maya for unknown reason...
+		'''
+		if iColour: # Set Colour in ChannelBox
+
+			# remove non-Facial attributes
+			aAttrList = cmds.listAttr(self.aPuppet[self.iChar], v = True)
+			for a in aAttrList[:]:
+				if not a.startswith('fr_'):
+					aAttrList.remove(a)
+				else:
+					break
+
+			# for all attributes for facial:
+			sColour = 'default'
+			dColour = UIColourControl.faceColour('getDict')
+			for a in aAttrList:
+				sKey = a[3:]
+				if sKey in dColour.keys():
+					sColour = sKey
+
+				if 'fr_' in a:
+					aColour = UIColourControl.getRGBvalues(dColour[sColour])
+					#cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = aColour)#, attrBgColor = dColour[sColour])
+					cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = aColour)
+				else:
+					pass
+					#cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = [1.0, 0.8, 0.8])#, attrBGColor = [0.25, 0.25, 0.25])
+					'''
 
 	def UIButton_EyeCtl(self, *args):
 
@@ -463,9 +500,6 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 		### Create a List of Keywords to be Filtered. ###
 		self.oFilter = cmds.itemFilterAttr(bns = 'Seach for an attr that NEVER EXIST')
 
-		#aTweaks = cmds.listAttr(r = True, st = ['*Tweak*', '*tweak*']) or []
-		#oTweaks = cmds.itemFilterAttr(bns = aTweaks)
-
 
 		if self.aActiveButtons:
 			for a in self.aActiveButtons:
@@ -515,7 +549,7 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 				self.oFilter = cmds.itemFilterAttr(union = (self.oFilter, oKeyWordList))
 
 
-		#print aKeyWordList
+
 
 
 		if self.aActiveButtons == []:

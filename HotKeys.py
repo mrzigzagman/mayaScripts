@@ -556,16 +556,16 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 	if iType == 1:
 		aPrint = ['a7a8f', 'Render', 0x6b6c75]
 		aVis = [1, 1, 0, 0, 1, None, None, 1]
-		sCamKeyword = 'Left'
+		aCamKeyword = ['Left', 'render', 'legalCam']
 	elif iType == 2:
 		aPrint = ['a7a8f', 'Face', 0x6b6c75]
 		aVis = [1, 0, 0, 1, 0, None, None, 0]
 		#iType = 0 # Ending loop here for now.
-		sCamKeyword = 'Shape1'
+		aCamKeyword = ['Shape1', 'FACE']
 	elif iType == 3:
 		aPrint = ['a7a8f', 'Side', 0x6b6c75]
 		aVis = [1, 0, 1, 0, 1, None, None, 1]
-		sCamKeyword = 'SIDE_CAM'
+		aCamKeyword = ['SIDE_CAM']
 		iType = 0 # Ending loop
 
 
@@ -576,8 +576,11 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 	sCamera = ''
 	aCamera = cmds.ls(type = 'camera')
 	for c in aCamera:
-		if sCamKeyword in c:
-			sCamera = c
+		for k in aCamKeyword:
+			print k, c
+			if k in c:
+				sCamera = c
+				break
 	if sCamera:
 		cmds.modelEditor('modelPanel4', e = True, camera = sCamera)
 	cmds.modelEditor('modelPanel1', e = True, camera = 'ANIM_CAM', activeView = True)

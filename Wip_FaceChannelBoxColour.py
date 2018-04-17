@@ -3,7 +3,6 @@ print '# TEMP.py #'
 
 from functools import partial
 import maya.cmds as cmds
-import colorsys
 #import maya.mel as mel
 #import getpass
 #import json
@@ -44,8 +43,7 @@ def main():
 				aAttrList.remove(a)
 			else:
 				break
-
-
+			'''
 		# for all attributes for facial:
 		sColour = 'default'
 		dColour = UIColourControl.faceColour('getDict')
@@ -56,29 +54,30 @@ def main():
 			if sKey in dColour.keys():
 				sColour = sKey
 
-			aColour = UIColourControl.getRGBvalues(dColour[sColour][0])
-			aFont = UIColourControl.getRGBvalues(dColour[sColour][1])
-
 			if not 'fr_' in a:
-
+				aColour = aFont = UIColourControl.getRGBvalues(dColour[sColour])
 
 				# Dim every second entry (L/R combined)
 				if not a[:-1] in sColourMatch:
 					iColourDim = iColourDim * -1 + 1
 				sColourMatch = a
 				if iColourDim:
-					aHSV = list(colorsys.rgb_to_hsv(aColour[0],aColour[1],aColour[2]) )
-					aHSV[2] *= 0.85
-					aColour = list(colorsys.hsv_to_rgb(aHSV[0],aHSV[1],aHSV[2]))
+					aColour = UIColourControl.offsetRGBvalues(aColour, [-0.06, -0.06, -0.06])
 
-				cmds.channelBox('mainChannelBox', edit = True, attrRegex = a, attrColor = aFont, attrBgColor = aColour )
+				# Make Font darker/brighter colour
+				iColour = sum(aColour)
+				aFont = aColour[:]
+				if iColour > 1.50:
+					aFont = UIColourControl.offsetRGBvalues(aFont, [-0.8, -0.8, -0.8])
+				else:
+					aFont = UIColourControl.offsetRGBvalues(aFont , [0.8, 0.8, 0.8])
+
+				print a, aFont, aColour
+				#cmds.channelBox('mainChannelBox', e = True, attrRegex = a, attrColor = aFont, attrBgColor = aColour )
+
+
 
 			else:
-				print
-				aHSV = list(colorsys.rgb_to_hsv(aColour[0],aColour[1],aColour[2]) )
-				aHSV[2] *= 0.60
-				aColour = list(colorsys.hsv_to_rgb(aHSV[0],aHSV[1],aHSV[2]))
-				print a, '[', aColour[0]*225, ',', aColour[1]*225, ',', aColour[2]*225, ']'
-
 				sColourMatch = ''
 				iColourDim = 1
+				'''
