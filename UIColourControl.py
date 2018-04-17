@@ -1,5 +1,6 @@
 import imp
 import json
+import colorsys
 import maya.cmds as cmds
 
 # Custom
@@ -41,8 +42,6 @@ def faceColour(sColour = 'default'):
 
 	if sColour == 'getDict':
 		return dColour
-	elif sColour == 'getFont':
-		return dFont
 	else:
 		if sColour in dColour.keys():
 			return getRGBvalues(dColour[sColour])
@@ -50,23 +49,42 @@ def faceColour(sColour = 'default'):
 			return getRGBvalues(dColour['default'])
 
 
-def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], aOffset = [0.2, 0.2, 0.2]):
-	for i in range(0, 3):
-		iVal = round(aRGB[i] + aOffset[i], 4)
-		if iVal >= 1.0:
-			iVal = 1.0
-		elif iVal <= 0.0:
-			iVal =0.0
-		aRGB[i] = iVal
+def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], R = 0.0, G = 0.0, B = 0.0):
+	aRGB[0] += R
+	aRGB[1] += G
+	aRGB[2] += B
 	return aRGB
 
 
-def getRGBvalues(aRGB): # from 255 to 1.0
+def getRGBvalues(aRGB): # from 255 to 1.0 USE convertRGBvaluesToScaleOF instead.
+	pass
+
+
+
+def convertRGBvaluesToScaleOf(iType = 1, aRGB = []): # iType is 1 or 255
 	aValues = []
-	for v in aRGB:
-		aValues.append(round(v/255.0, 4))
+
+	if iType == 1:
+		for v in aRGB:
+			aValues.append(round(v/255.0, 4))
+
+	elif iType == 255:
+		for v in aRGB:
+			aValues.append(int(v*255))
+	else:
+		print 'convertRGBvaluesTo : error: enter only 1 or 255'
 
 	return aValues
+
+def RGBHSVconverter(sType = 'ToRGB', aColour = [1, 1, 1]):
+	aNew = []
+	if sType == 'ToHSV':
+		aNew = list(colorsys.rgb_to_hsv(aColour[0],aColour[1],aColour[2]))
+	else:
+		aNew = list(colorsys.hsv_to_rgb(aColour[0],aColour[1],aColour[2]))
+
+	return aNew
+
 def inViewMessageColourPreset(keyword = 'Blue', text = 'TEST'):
 	dColour = {
 	'Green': ['6bad64', text, 0x6c756b],

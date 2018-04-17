@@ -4,6 +4,7 @@ print '# TEMP.py #'
 from functools import partial
 import maya.cmds as cmds
 import colorsys
+import sys
 #import maya.mel as mel
 #import getpass
 #import json
@@ -30,6 +31,8 @@ def main():
 	#reload(UIBuilderTemplate)
 	#UIBuilderTemplate.main()
 
+	import sys; p = '/weta/prod/motion/work/dyabu/mayaScripts'
+	if p not in sys.path: sys.path.append(p)
 	import ChannelBoxColourFaceTool
 	reload(ChannelBoxColourFaceTool)
 	ChannelBoxColourFaceTool.main()
