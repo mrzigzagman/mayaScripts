@@ -33,6 +33,10 @@ def main():
 
 	iColour = 1
 	oSel = [str(o) for o in cmds.ls(sl = True, o = True)]
+	if not oSel:
+		iColour = 0
+		aPrint = UIColourControl.inViewMessageColourPreset('Red', 'Plz SELECT a Facial CTL !!')
+		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'topCenter', fade = True, fts = 12, ft = 'arial',bkc = aPrint[2] )
 
 	if iColour: # Set Colour in ChannelBox
 
