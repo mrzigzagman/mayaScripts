@@ -1,3 +1,5 @@
+# Hotkeys - Consolidated v0.1.0
+# new feature. a button to create custom scripts in Script editor.
 # Hotkeys - Consolidated v0.0.3
 # Focus Button Custom
 # Hotkeys - Consolidated v0.0.2
@@ -111,27 +113,28 @@ def KeyList():
 	'COMMA_ALT_P': HotKey_Paste,
 	'SPACE_N_P': HotKey_PanePoP,
 	}
-	return dHotKeys.keys()
+	return dHotKeys
 
 def Execute(skey = 'j', iModifier = 0, sPress = 'P'):
 	sKey = skey.upper()
 	sModifier = str(iModifier)
 	sPress = sPress.upper()
 	aModifier = [   0, 'N',
-					1, 'SHIFT',
-					4, 'CTRL',
+					1, 'SFT',
+					4, 'CTR',
 					8, 'ALT',
 					5, 'S+C',
 					9, 'S+A',
 					12, 'A+C',
-					13, 'C+A+S',]
+					13, 'C+A+S',
+					9999,'CMD']
 	for i in range(0, len(aModifier), 2):
 		if aModifier[i] == iModifier:
 			sModifier = aModifier[i+1]
 
 	dHotKeys = KeyList()
 
-	print sKey, sModifier, sPress
+
 	dHotKeys['%s_%s_%s' % (sKey, sModifier, sPress)]()
 
 
@@ -472,6 +475,7 @@ def HotKey_SetUI():
 
 	oSel = [str(o) for o in cmds.ls(sl = True, o = True)]
 
+	# ANIM camera creation
 	iRecreateAnimCam = 0 # 1 = Re-create ANIM_CAM everytime. 0 = Only create when there is no cam.
 	sCamName = 'ANIM_CAM'
 	if iRecreateAnimCam:
@@ -501,10 +505,25 @@ def HotKey_SetUI():
 			cmds.rename(oCamera[0], '%s'%sCamName)
 
 
+	# Visibility Layer creation
+	aLayer = ['Hidden', 'NonSelect']
+	aLayerSetting = [	[28,2,False, True],
+						[28,2,True, False],]
+	for i, a in enumerate(aLayer):
+		if not cmds.objExists(a):
+			cmds.createDisplayLayer(e = True, name = a)
+			for v, s in enumerate(['color', 'displayType', 'visibility', 'hideOnPlayback']):
+				cmds.setAttr('%s.%s'%(aLayer[i], s),aLayerSetting[i][v])
 
+
+	# Set panel to custom.
 	mel.eval('setNamedPanelLayout "Custom_Anim";')
+
+
+	# CUSTOM TOOL - project based
 	ProjectCustom_SetUI() # Custom tool for this proj
 
+	# Selection - Back to what was selected first.
 	cmds.select(oSel, r = True)
 
 def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
@@ -544,25 +563,25 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 
 			if g == aGroup[0]:
 				cmds.addAttr(aGroup[0], shortName = 'notes', dataType = 'string') # Activate Notes Attributes to store json
-				StudioSettings.AnimToolAttributes(aGroup[0], dDict) # Store dDict
+				StudioSettings.SceneInfoStorage(aGroup[0], dDict) # Store dDict
 
-	dDict = StudioSettings.AnimToolAttributes(aGroup[0]) # Get dDict
+	dDict = StudioSettings.SceneInfoStorage(aGroup[0]) # Get dDict
 
 
 	iType = dDict['ABACustomCamViews'] + 1
 	if iType == 1:
 		aPrint = ['a7a8f', 'Render', 0x6b6c75]
 		aVis = [1, 1, 0, 0, 1, None, None, 1]
-		sCamKeyword = 'Left'
+		aCamKeyword = ['Left', 'render', 'legalCam']
 	elif iType == 2:
 		aPrint = ['a7a8f', 'Face', 0x6b6c75]
 		aVis = [1, 0, 0, 1, 0, None, None, 0]
 		#iType = 0 # Ending loop here for now.
-		sCamKeyword = 'Shape1'
+		aCamKeyword = ['Shape1', 'FACE']
 	elif iType == 3:
 		aPrint = ['a7a8f', 'Side', 0x6b6c75]
 		aVis = [1, 0, 1, 0, 1, None, None, 1]
-		sCamKeyword = 'SIDE_CAM'
+		aCamKeyword = ['SIDE_CAM']
 		iType = 0 # Ending loop
 
 
@@ -573,8 +592,11 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 	sCamera = ''
 	aCamera = cmds.ls(type = 'camera')
 	for c in aCamera:
-		if sCamKeyword in c:
-			sCamera = c
+		for k in aCamKeyword:
+			print k, c
+			if k in c:
+				sCamera = c
+				break
 	if sCamera:
 		cmds.modelEditor('modelPanel4', e = True, camera = sCamera)
 	cmds.modelEditor('modelPanel1', e = True, camera = 'ANIM_CAM', activeView = True)
@@ -583,7 +605,7 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 
 	PrintOnScreen(aPrint)
 	dDict['ABACustomCamViews'] = iType
-	StudioSettings.AnimToolAttributes(aGroup[0], dDict) # Store dDict
+	StudioSettings.SceneInfoStorage(aGroup[0], dDict) # Store dDict
 
 	cmds.select(oSel, r = True)
 

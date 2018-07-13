@@ -60,9 +60,11 @@ print v.name
 
 
 
-
+## if usage.
 x = 1 if z else 2
 
+
+## enumerate
 for iIndex, x in enumerate(oSel[:]): # [:] makes it run a copy of oSel so you can modify oSel in the loop.
 	print iIndex
 	print x
@@ -70,8 +72,28 @@ for iIndex, x in enumerate(oSel[:]): # [:] makes it run a copy of oSel so you ca
 
 
 
-# Pring all attributes selected. (Regardless of shape, transform node..)
-print [str(c+'.'+cmds.attributeName(c+'.'+b, l=True)) for a in 'msho' for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or [] for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True})]
+# Print all attributes selected. (Regardless of shape, transform node..)
+print [str(c+'.'+cmds.attributeName(c+'.'+b, l=True))
+	for a in 'msho'
+	for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or []
+	for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True}) or []
+	if cmds.attributeQuery(b, n=c, ex=True)]
+
+
+# runs until reaches ""
+iter(f.readline, ""):
+
+
+
+# For loop variations.
+for true {
+	true = False "or" break
+}
+
+with open() as f:
+	for line in iter(f.readline, ""):
+		asdsad
+
 
 
 # Importing
@@ -285,7 +307,7 @@ clipboard.set_text('Shit!')
 clipboard.store()
 
 
-# Filter objects
+# Filter attr in channelBox
 aKeyWords = ['*nose*','*lip*']
 aList = cmds.listAttr(r = True, st = aKeyWords) or []
 oFilter = cmds.itemFilterAttr(bns = aList)
@@ -497,9 +519,7 @@ if sSound:
 	print iOffset
 
 
-### Open Fold
-	[pasted text truncated for security]
-
+### Open Folder
 cmd1 ='nautilus /net/homes/dyabu/Desktop/Shots/tu125250/Rv'
 os.system(cmd1)
 

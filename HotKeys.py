@@ -1,3 +1,5 @@
+# Hotkeys - Consolidated v0.1.1
+# Adjusting Custom Camera for aba
 # Hotkeys - Consolidated v0.1.0
 # new feature. a button to create custom scripts in Script editor.
 # Hotkeys - Consolidated v0.0.3
@@ -12,9 +14,17 @@
 import maya.cmds as cmds
 import maya.mel as mel
 import imp
+import sys
 import redbox as rb #vvv 1/2
 
+# Custom
+import StudioSettings
+import UIColourControl
+
+
+
 sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScrips/'
+if sScriptPath not in sys.path: sys.path.append(sScriptPath)
 
 
 # Rule number 1 : ALL CAPS
@@ -34,6 +44,7 @@ P - Pressed / Released
 # 3. Then, paste to all script you made.
 # 4. Then, change the Key and Press/Released
 # Tip Set the release first before assign a pressed key.
+
 '''
 # Custom Hotkey - Consolidated - v0.0.1
 
@@ -53,6 +64,8 @@ import Hotkeys # Hotkeys.py
 iModifier = cmds.getModifiers()
 HotKeys.Execute(sChar, iModifier, sPress)
 '''
+
+
 def KeyList():
 	dHotKeys = {
 	'B_ALT_P': HotKey_PreviousGreenKey,
@@ -64,17 +77,18 @@ def KeyList():
 
 
 	'F_ALT_P': HotKey_AttrIncrement_n001,
-	'F_N_P': Hotkey_SelectAll_P,
-	'F_N_R': Hotkey_SelectAll_R,
+	'F_N_P': HotKey_SelectAll_P,
+	'F_N_R': HotKey_SelectAll_R,
 
 	'G_ALT_P': HotKey_AttrIncrement_n01,
-	'G_N_P': Hotkey_SetKey,
+	'G_N_P': HotKey_SetKey,
 
 	'H_ALT_P': HotKey_AttrIncrement_p01,
 	'H_N_P': HotKey_Playback_P,
 	'H_N_R': HotKey_Playback_R,
 
-	'I_ALT_P': HotKey_OpenOutliner,
+	#'I_ALT_P': HotKey_OpenOutliner,
+	'I_ALT_P': I_ALT_P,
 	'I_N_P': I_N_P,
 	'I_N_R': I_N_R,
 
@@ -83,7 +97,11 @@ def KeyList():
 	# Remember to modify Focus in OUtliner and GraphEditor to J also.
 	'J_N_P': HotKey_Focus,
 
-	# 'K_ALT_P': K_ALT_P,
+	'K_N_P': K_N_P,
+	'K_N_R': K_N_R,
+
+	#'K_ALT_P': K_ALT_P,
+	#'K_ALT_P': K_ALT_R,
 	# 'L_ALT_P': L_ALT_P,
 	'M_ALT_P': HotKey_Copy,
 	'M_N_P': HotKey_NextFrame,
@@ -141,29 +159,120 @@ def Execute(skey = 'j', iModifier = 0, sPress = 'P'):
 #### Shortcut Functions ####
 # 1. All Caps
 
-##### NON HotKey_ Fuctions #####
+##### NOT HotKey_ Fuctions #####
 def NOT():
 	print 'Hotkey Not Assigned.'
 	aPrint = ['d8766c', 'HotKey Not Assigned', 0x756b6b, 'topCenter']
 	cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = aPrint[3], fade = True, fts = 7, ft = 'arial',bkc = aPrint[2] )
 
-def ATT_INCREMENT(iAmount):
-	# Attribute Increment v3.0.0
+def DisplayFaceValues():
+	iStop = 0
+	iNegative = False
+
 	oChannel = [str(c+'.'+cmds.attributeName(c+'.'+b, l=True)) for a in 'msho' for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or [] for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True})]
+	oSel = [str(o) for o in cmds.ls(sl = True, o = True)]
+
+	if len(oSel) == 1:
+		if 0 < len(oChannel) <= 2:
+			for c in oChannel:
+				if cmds.attributeQuery(c.split('.')[-1], node = oSel[0], minExists = True):
+					if cmds.attributeQuery(c.split('.')[-1], node = oSel[0], min = True)[0] == -1.0:
+						iNegative = True
+				else:
+					iStop = 2
+				if cmds.attributeQuery(c.split('.')[-1], node = oSel[0], maxExists = True):
+					if not cmds.attributeQuery(c.split('.')[-1], node = oSel[0], max = True)[0] == 1.0:
+						iStop = 3
+				else:
+					iStop = 5
+
+			if len(oChannel) == 2:
+				if not oChannel[1].split('.')[-1] == oChannel[0].split('.')[-1][:-1]+'R':
+					iStop = 6
+		else:
+			iStop = 7
+	else:
+		iStop = 8
+
+	if iStop:
+		#print iStop
+		pass
+
+	else:
+		# Initial Bar Colours
+		aBar = []
+		aColour = []
+		for i in range(201):
+			aBar.append('-')
+			aColour.append('#85929E')
+		for i in range(0, 201, 10):
+			aBar[i] = ':'
+			aColour[i] = '#AEB6BF'
+		for i in range(0, 201, 50):
+			aBar[i] = '|'
+			aColour[i] = '#D6DBDF'
+		for i in range(0, 100):
+			aColour[i] = '#808B96'
+
+		# Logic to split markings
+		for i, c in enumerate(oChannel):
+			iVal = int(cmds.getAttr(c)*100.0)+100
+			aColour[iVal] = '#D4AC0D'
+			if len(oChannel) == 1:
+				if c[-1] == 'L':
+					aBar[iVal] = ')'
+				elif c[-1] == 'R':
+					aBar[iVal] = '('
+				else:
+					aBar[iVal] = '|'
+					#aColour[iVal] = '#FEF9E7'
+			else:
+				if i == 0:
+					aBar[iVal] = ')'
+				else:
+					if aBar[iVal] == ')':
+						aBar[iVal] = 'O'
+					else:
+						aBar[iVal] = '('
+
+		aText = []
+		for i, v in enumerate(aBar[:]):
+			aText.append('<text style="color:%s";>%s</text>'%(aColour[i], v ) )
+
+		if not iNegative:
+			aText = aText[100:]
+		sText = ''.join(aText)
+
+		cmds.inViewMessage(amg = sText, pos = 'botCenter', fade = False, fts = 7, ft = 'arial',bkc = 0x5D6D7E, dragKill = 1)
+
+def ATT_INCREMENT(iAmount):
+	# Attribute Increment v4.0.0
+	oChannel = [str(c+'.'+cmds.attributeName(c+'.'+b, l=True)) for a in 'msho' for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or [] for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True})]
+
+	iNewValue = None
 
 	if oChannel:
 		for c in oChannel:
-			iVal = cmds.getAttr(c)
-			cmds.setAttr(c, iVal + iAmount)
+			iVal = cmds.getAttr(c) + iAmount
 
-		if iAmount >= 0.01:
-			aPrint = ['a7a8af', '+'+str(iAmount), 0x6b6c75, 'botCenter']
-		else:
-			aPrint = ['d8766c', '+'+str(iAmount), 0x756b6b, 'botCenter']
+			if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], minExists = True):
+				if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], min = True)[0] >= iVal :
+					iNewValue = cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], min = True)[0]
+
+			if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], maxExists = True):
+				if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], max = True)[0] <= iVal:
+					iNewValue = cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], max = True)[0]
+
+			if not iNewValue == None:
+				cmds.setAttr(c, iNewValue)
+			else:
+				cmds.setAttr(c, iVal)
+
 	else:
-		aPrint = ['d8766c', 'No Attr Selected', 0x756b6b, 'topCenter']
+		aPrint = ['d8766c', 'No Attr Selected', 0x756b6b, 'midCenterBot']
+		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = aPrint[3], fade = True, fts = 10, ft = 'arial',bkc = aPrint[2] )
 
-	cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = aPrint[3], fade = True, fts = 10, ft = 'arial',bkc = aPrint[2] )
+	DisplayFaceValues()
 
 def PrintOnScreen(aPrint):
 	cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'topCenter', fade = True, fts = 10, ft = 'arial', bkc = aPrint[2])
@@ -276,7 +385,7 @@ def HotKey_PanePoP():
 
 def HotKey_AttrIncrement_n01():
 	ATT_INCREMENT(-0.1)
-
+	DisplayFaceValues()
 
 def HotKey_ToggleVisCurves():
 	# Toggle nurbsCurve in modelPanel4 (top Left)
@@ -348,12 +457,13 @@ def HotKey_PreviousFrame():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.currentTime(q = True) - 1)
 	GreenTickKeys()
-	cmds.undoInfo(swf = 1)
+	DisplayFaceValues()
 
-def Hotkey_SelectAll_P():
+
+def HotKey_SelectAll_P():
 
 	mel.eval('buildSelectAllMM')
-def Hotkey_SelectAll_R():
+def HotKey_SelectAll_R():
 	mel.eval('buildSelectAllMM_release')
 
 
@@ -362,9 +472,10 @@ def HotKey_PreviousKey():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.findKeyframe(timeSlider = True, which = 'previous'))
 	GreenTickKeys()
-	cmds.undoInfo(swf = 1)
+	DisplayFaceValues()
 
-def Hotkey_SetKey():
+
+def HotKey_SetKey():
 	mel.eval('performSetKeyframeArgList 1 {"0", "animationList"}')
 	GreenTickKeys(1)
 
@@ -375,7 +486,8 @@ def HotKey_NextKey():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.findKeyframe(timeSlider = True, which = 'next'))
 	GreenTickKeys()
-	cmds.undoInfo(swf = 1)
+	DisplayFaceValues()
+
 
 def HotKey_Playback_P():
 	mel.eval('togglePlayback')
@@ -391,15 +503,44 @@ def HotKey_PlayBlastTool():
 	#reload(PlayBlastTool)
 	PlayBlastTool.main()
 
-def HotKey_OpenOutliner():
-	# Weta zeus window
-	from ShotsToolbar import zeus_window; zeus_window.main(workflows=["lighting"])
+def I_ALT_P():
+	if 'graphEditor' in cmds.getPanel(wf = True):
+		# Jason's elastic tool. (fcurve peak scale tool)
+		print 'test'
+		__import__('imp').load_source("_", "/weta/prod/motion/work/jdixon/python/scaler.py").main()
+	else:
+		# Weta zeus window
+		from ShotsToolbar import zeus_window; zeus_window.main(workflows=["lighting"])
+
 def I_N_P():
-	mel.eval('storeLastAction( "restoreLastContext " + `currentCtx`); setToolTo insertKeySuperContext')
+		if 'graphEditor' in cmds.getPanel(wf = True):
+			mel.eval('setToolTo regionSelectKeySuperContext;')
+		else:
+			pass
 def I_N_R():
-	mel.eval('invokeLastAction')
+	pass
+
+def K_N_P():
+	oPanel = cmds.getPanel(wf = True)
+
+	if 'graphEditor' in oPanel:
+		mel.eval('storeLastAction( "restoreLastContext " + `currentCtx`);setToolTo TimeDragger')
+
+	else:
+		import AttrTool
+		reload(AttrTool)
+		AttrTool.main()
 
 
+def K_N_R():
+	oPanel = cmds.getPanel(wf = True)
+
+	if 'graphEditor' in oPanel:
+		mel.eval('invokeLastAction')
+
+	else:
+		pass
+		#print 'else tool',
 def HotKey_NextFrame():
 	# Need to revise. optimize this part
 	# Next Frame v2.0.1
@@ -430,7 +571,8 @@ def HotKey_NextFrame():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.currentTime(q = True) +1 )
 	GreenTickKeys()
-	cmds.undoInfo(swf = 1)
+	DisplayFaceValues()
+
 
 
 def HotKey_Focus():
@@ -475,6 +617,7 @@ def HotKey_SetUI():
 
 	oSel = [str(o) for o in cmds.ls(sl = True, o = True)]
 
+	# ANIM camera creation
 	iRecreateAnimCam = 0 # 1 = Re-create ANIM_CAM everytime. 0 = Only create when there is no cam.
 	sCamName = 'ANIM_CAM'
 	if iRecreateAnimCam:
@@ -504,10 +647,25 @@ def HotKey_SetUI():
 			cmds.rename(oCamera[0], '%s'%sCamName)
 
 
+	# Visibility Layer creation
+	aLayer = ['Hidden', 'NonSelect']
+	aLayerSetting = [	[28,2,False, True],
+						[28,2,True, False],]
+	for i, a in enumerate(aLayer):
+		if not cmds.objExists(a):
+			cmds.createDisplayLayer(e = True, name = a)
+			for v, s in enumerate(['color', 'displayType', 'visibility', 'hideOnPlayback']):
+				cmds.setAttr('%s.%s'%(aLayer[i], s),aLayerSetting[i][v])
 
+
+	# Set panel to custom.
 	mel.eval('setNamedPanelLayout "Custom_Anim";')
+
+
+	# CUSTOM TOOL - project based
 	ProjectCustom_SetUI() # Custom tool for this proj
 
+	# Selection - Back to what was selected first.
 	cmds.select(oSel, r = True)
 
 def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
@@ -518,15 +676,21 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 		cmds.rename(oSideCamera[0], '%s'%sSideCamera)
 
 
+
 	oSel = [str(s) for s in cmds.ls(sl = True, o = True)]
 
-	# Importing Studio Settings
-	sScriptName = 'StudioSettings' # remove '.py'
-	sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
-	StudioSettings = imp.load_source(sScriptName, '%s/%s.py'%(sScriptPath,sScriptName))
+	# Creation of  SideCam
+	sSideCamera = 'SIDE_CAM'
+	if not cmds.objExists(sSideCamera):
+		oSideCamera = cmds.camera()
+		cmds.rename(oSideCamera[0], '%s'%sSideCamera)
 
-	dDict = {'ABACustomCamViews':0}
 
+	# Scene Storage. StudioSetting.SceneInfoStorage()
+	dSceneInfo = {	'CustomCamViews':0,
+				'CustomCamViewList':[]}
+
+	# Node Structure Creation
 	aGroup = [	'AllCameras',
 				'CardRig_',
 				'SideCam_',
@@ -534,68 +698,94 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 				'RenderCam_',
 				'Rosa',
 				'Alita',
-				'Lights'] # Do not change order. Possible to add more.
+				'Lights'] # Do not change the list order. Possible to add more.
 	cmds.select(clear = True)
 
+	iError = 0
+
+	# Parent Nodes
 	for g in aGroup:
-
 		if not cmds.objExists(g):
-			if '_' in g:
-				cmds.group( em = True, name = g, p = aGroup[0])
-			else:
-				cmds.group( em = True, name = g)
-
+			if '_' in g: cmds.group( em = True, name = g, p = aGroup[0])
+			else: cmds.group( em = True, name = g)
 			if g == aGroup[0]:
 				cmds.addAttr(aGroup[0], shortName = 'notes', dataType = 'string') # Activate Notes Attributes to store json
-				StudioSettings.SceneInfoStorage(aGroup[0], dDict) # Store dDict
-
-	dDict = StudioSettings.SceneInfoStorage(aGroup[0]) # Get dDict
+				StudioSettings.SceneInfoStorage(aGroup[0], dSceneInfo) # Store dSceneInfo
 
 
-	iType = dDict['ABACustomCamViews'] + 1
-	if iType == 1:
-		aPrint = ['a7a8f', 'Render', 0x6b6c75]
-		aVis = [1, 1, 0, 0, 1, None, None, 1]
-		aCamKeyword = ['Left', 'render', 'legalCam']
-	elif iType == 2:
-		aPrint = ['a7a8f', 'Face', 0x6b6c75]
-		aVis = [1, 0, 0, 1, 0, None, None, 0]
-		#iType = 0 # Ending loop here for now.
-		aCamKeyword = ['Shape1', 'FACE']
-	elif iType == 3:
-		aPrint = ['a7a8f', 'Side', 0x6b6c75]
-		aVis = [1, 0, 1, 0, 1, None, None, 1]
-		aCamKeyword = ['SIDE_CAM']
-		iType = 0 # Ending loop
+	## Logic to find available cameras. (find children for camera)
+	dSceneInfo = StudioSettings.SceneInfoStorage(aGroup[0]) # Get dSceneInfo
+
+	dSceneInfo['CustomCamViewList']  = []
+	for cam in aGroup[2:5]: # Using aGroup[2 to 4]
+		if cmds.listRelatives(cam, c = True, ad = True, type = 'camera'):
+			dSceneInfo['CustomCamViewList'].append(cam)
+
+	dSceneInfo = StudioSettings.SceneInfoStorage(aGroup[0], dSceneInfo) # Store dSceneInfo (update)
+	print dSceneInfo
 
 
-	for i, v in enumerate(aVis):
-		if not v == None:
-			cmds.setAttr('%s.visibility'%aGroup[i], v)
+	# Find Next Camera to Display
 
-	sCamera = ''
-	aCamera = cmds.ls(type = 'camera')
-	for c in aCamera:
-		for k in aCamKeyword:
-			print k, c
-			if k in c:
-				sCamera = c
-				break
-	if sCamera:
-		cmds.modelEditor('modelPanel4', e = True, camera = sCamera)
-	cmds.modelEditor('modelPanel1', e = True, camera = 'ANIM_CAM', activeView = True)
+	if len(dSceneInfo['CustomCamViewList']) == 0: # If no camera is found. (not sorted under cam groups)
+		iError = 1 # No camera found.
+		aPrint = UIColourControl.inViewMessageColourPreset('Red', 'No Cameras found')
+		iIndex = 0
+
+	elif dSceneInfo['CustomCamViews'] >= len(dSceneInfo['CustomCamViewList'])-1:
+		iIndex = 0
+	else:
+		iIndex = dSceneInfo['CustomCamViews'] + 1
 
 
 
-	PrintOnScreen(aPrint)
-	dDict['ABACustomCamViews'] = iType
-	StudioSettings.SceneInfoStorage(aGroup[0], dDict) # Store dDict
+	if not iError: # If cameras are found...
+		sCamera = dSceneInfo['CustomCamViewList'][iIndex]
+		aCamera = cmds.listRelatives(sCamera, c = True, ad = True, type = 'camera')
+
+		if sCamera == aGroup[4]:
+			aPrint = UIColourControl.inViewMessageColourPreset('Green', 'RENDER cam')
+			aVis = [1, 1, 0, 0, 1, None, None, 1]
+			aCamKeyword = ['Left', 'render', 'legalCam']
+		elif sCamera == aGroup[3]:
+			aPrint = UIColourControl.inViewMessageColourPreset('Blue',  ' FACE cam ')
+			aVis = [1, 0, 0, 1, 0, None, None, 0]
+			aCamKeyword = ['Shape1', 'FACE']
+		elif sCamera == aGroup[2]:
+			aPrint = UIColourControl.inViewMessageColourPreset('Gray',  ' SIDE cam ')
+			aVis = [1, 0, 1, 0, 1, None, None, 1]
+			aCamKeyword = ['SIDE_CAM']
+
+		# Hide unnecessary Groups of camera.
+		for i, v in enumerate(aVis):
+			if not v == None:
+				cmds.setAttr('%s.visibility'%aGroup[i], v)
+
+
+		# Pick camera of the first match in the keyword.
+		for c in aCamera:
+			for k in aCamKeyword:
+				if k in c:
+					sCamera = c
+					break
+		if sCamera:
+			cmds.modelEditor('modelPanel4', e = True, camera = sCamera)
+		cmds.modelEditor('modelPanel1', e = True, camera = 'ANIM_CAM', activeView = True)
+
+
+	# Print Statement
+	cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'botCenter', fade = True, fts = 10, ft = 'arial',bkc = aPrint[2] )
+
+	# Store Scene Info.
+	dSceneInfo['CustomCamViews'] = iIndex
+	StudioSettings.SceneInfoStorage(aGroup[0], dSceneInfo) # Store dSceneInfo
 
 	cmds.select(oSel, r = True)
 
 
 def HotKey_AttrIncrement_p001():
 	ATT_INCREMENT(0.01)
+	DisplayFaceValues()
 	GreenTickKeys()
 
 def HotKey_Paste():
@@ -604,6 +794,7 @@ def HotKey_Paste():
 
 def HotKey_AttrIncrement_p01():
 	ATT_INCREMENT(0.1)
+	DisplayFaceValues()
 	GreenTickKeys()
 def HotKey_Copy():
 	mel.eval('cutCopyPaste "copy"')
@@ -661,6 +852,7 @@ def HotKey_ScaleTool_R():
 
 def HotKey_AttrIncrement_n001():
 	ATT_INCREMENT(-0.01)
+	DisplayFaceValues()
 	GreenTickKeys()
 def HotKey_Undo():
 	cmds.undo()

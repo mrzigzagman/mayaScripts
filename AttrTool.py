@@ -13,6 +13,8 @@ from functools import partial
 # CUSTOM
 import UIColourControl
 reload(UIColourControl)
+import ChannelBoxColourFaceTool
+reload(ChannelBoxColourFaceTool)
 
 K = cmds.getModifiers()
 
@@ -45,8 +47,8 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 										'Except': [],
 										'Colour':'gray',
 										'Key': 'Brow',},
-								'Eye':  {'KeyWords':['*Eye*','*Pupil*', '*LidTightner*', '*Procerus*', '*Squint*', '*Lid*', '*Epicanthic*',  ],
-										'Except': ['Scalp'],
+								'Eye':  {'KeyWords':['*Eye*','*Pupil*', '*LidTightner*', '*Squint*', '*Lid*', '*Epicanthic*',  ],
+										'Except': ['Scalp', 'Muzzle'],
 										'Colour':'gray',
 										'Key': 'Eye',},
 								'Nose': {'KeyWords':['*Nose*', '*Nasolabial*', '*Nostril*', '*Philtrum*' ],
@@ -65,9 +67,9 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 										'Colour':'gray',
 										'Except': ['Nose'],
 										'Key': 'Lip',},
-								'LowerLip':  {'KeyWords':['*Lip*','*Lower*', '*Chin*'],
+								'LowerLip':  {'KeyWords':['*Lip*','*Lower*', '*Chin*', '*chin*'],
 										'Colour':'gray',
-										'Except': ['Platysma', 'Brow'],
+										'Except': ['Platysma', 'Brow', 'Puff', 'Palate'],
 										'Key': 'LowerLip',},
 								'Jaw':  {'KeyWords':['*Jaw*', '*Chin*'],
 										'Colour':'gray',
@@ -362,41 +364,15 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 		cmds.text('bChar1', e = True, l = self.aFaces[self.iChar].split(' ')[0])
 		cmds.button('bChar2', e = True, l = self.aFaces[self.iChar].split(' ')[1])
 
-		iColour = 0
+		# Set Colour in Channel Box... Crashes Maya for unknown reason...
 		try:
 			cmds.select(self.aPuppet[self.iChar], r = True)
-			iColour = 1
+			ChannelBoxColourFaceTool.main()
 		except:
 			pass
 
-		# Set Colour in Channel Box... Crashes Maya for unknown reason...
-		'''
-		if iColour: # Set Colour in ChannelBox
 
-			# remove non-Facial attributes
-			aAttrList = cmds.listAttr(self.aPuppet[self.iChar], v = True)
-			for a in aAttrList[:]:
-				if not a.startswith('fr_'):
-					aAttrList.remove(a)
-				else:
-					break
 
-			# for all attributes for facial:
-			sColour = 'default'
-			dColour = UIColourControl.faceColour('getDict')
-			for a in aAttrList:
-				sKey = a[3:]
-				if sKey in dColour.keys():
-					sColour = sKey
-
-				if 'fr_' in a:
-					aColour = UIColourControl.getRGBvalues(dColour[sColour])
-					#cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = aColour)#, attrBgColor = dColour[sColour])
-					cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = aColour)
-				else:
-					pass
-					#cmds.channelBox('mainChannelBox', attrRegex = a, attrColor = [1.0, 0.8, 0.8])#, attrBGColor = [0.25, 0.25, 0.25])
-					'''
 
 	def UIButton_EyeCtl(self, *args):
 
@@ -439,6 +415,8 @@ class UIBuilder: # UI BUILDER TEMPLATE .6.1.3
 		if sModel in self.aFaces:
 			self.iChar = self.aFaces.index(sModel)
 		cmds.select(self.aPuppet[self.iChar], r = True)
+
+		ChannelBoxColourFaceTool.main()
 
 
 		K = cmds.getModifiers()

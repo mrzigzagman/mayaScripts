@@ -7,7 +7,6 @@ import colorsys
 import UIColourControl
 
 
-
 def main():
 	iColour = 1
 	oSel = [str(o) for o in cmds.ls(sl = True, o = True)]
@@ -16,11 +15,14 @@ def main():
 		aPrint = UIColourControl.inViewMessageColourPreset('Red', 'SELECT a FacialActionControl.')
 		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = 'topCenter', fade = True, fts = 12, ft = 'arial',bkc = aPrint[2] )
 
+
 	if iColour: # Set Colour in ChannelBox
 
 		# remove non-Facial attributes
 		aAttrList = cmds.listAttr(oSel[0], v = True)
 		#aAttrList = cmds.listAttr(self.aPuppet[self.iChar], v = True)
+
+		# Remove all attributes before 'fr_'
 		for a in aAttrList[:]:
 			if not a.startswith('fr_'):
 				aAttrList.remove(a)
@@ -33,7 +35,8 @@ def main():
 		sColourMatch = ''
 		iColourDim = 1
 		for a in aAttrList:
-			sKey = a[3:]
+			sKey = a[3:]# .lower() To set keys all lowercase? to be decided
+
 			if sKey in dColour.keys():
 				sColour = sKey
 

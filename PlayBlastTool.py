@@ -1,5 +1,4 @@
-# PlayBlast Tool v10.3.0
-# Re Construct with New UIBuilderTemplate
+# PlayBlast Tool v10.3.1
 # vvv 3/3
 
 import maya.cmds as cmds
@@ -23,22 +22,13 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		self.sTool = 'PBTool' # Tool name node under 'Anim_Tool'
 
 		# Importing Studio Settings
-		#self.sScriptNamStudioSettings' # remove '.py'
-		#self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
-		#StudioSettings = imp.load_source(self.sScriptName, '%s/%s.py'%(self.sScriptPath,self.sScriptName))
-
-		# Getting info uStudioSettings
-		#self.aShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
-		#self.dShotInfo = aShotInfo[15]
 		self.dShotInfo = StudioSettings.ShotInfo(1,0)
 		aPBInfo = StudioSettings.ProjectInfo('ABA')[0]
 		self.iPBwidth = aPBInfo[0]
 		self.iPBheight = aPBInfo[1]
-		#self.sRvPath = self.aShotInfo[6] + 'Active.rv'
-		#self.sRvPath = self.dShotInfo['sPlayBlastToolPath'] + 'Active.rv'
-		self.sRvPath = self.dShotInfo['sPlayBlastToolPath'] + '_.rv'
 
-		#self.oUI = 'PB_%s_%s' % (self.aShotInfo[4], self.aShotInfo[3]) # Watch out when this is only numbers, the tool fails.
+		sFileName = '%s_%s_.rv' % (self.dShotInfo['sSeqNumber'], self.dShotInfo['sShotNumber'])
+		self.sRvPath = os.path.join(self.dShotInfo['sPlayBlastToolPath'], sFileName)
 		self.oUI = 'PB_%s_%s' % (self.dShotInfo['sSeqNumber'], self.dShotInfo['sShotNumber']) # Watch out when this is only numbers, the tool fails.
 
 		# Setting up tool custom dictionary for storage

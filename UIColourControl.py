@@ -7,7 +7,7 @@ import maya.cmds as cmds
 import StudioSettings
 
 
-dShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
+dShotInfo = StudioSettings.ShotInfo(0,0) # (1,1) = (Folder Creation, Print paths.)
 sShotNumber = dShotInfo['sSeqNumber']+dShotInfo['sShotNumber']
 sProjectConfigFile = dShotInfo['sProjectConfigFile']
 
@@ -15,8 +15,13 @@ def faceColour(sColour = 'default'):
 
 	dColour = {
 	'eyeBalls':[[102, 0, 0], [230, 184, 184]],
+
 	'eyeLids':[[170, 0, 0],[255, 218, 218]],
+	#'eye_Lids':[[170, 0, 0],[255, 218, 218]],
+
 	'brows':[[170, 170, 0], [50, 50, 0]],
+	'Brows':[[170, 170, 0], [50, 50, 0]],
+
 	'cheeks':[[0, 85, 0], [178, 255, 178]],
 	'nose':[[170, 85, 0], [255, 221, 186]],
 	'lipSticky':[[71, 71, 71], [169, 169, 169]],
@@ -25,7 +30,10 @@ def faceColour(sColour = 'default'):
 	'lipCorners':[[0, 75, 110], [141, 230, 255]],
 	'lipsPart':[[0, 125, 178], [203, 239, 255]],
 	'lipsFold':[[84, 218, 255], [0, 45, 64]],
+	
 	'puff':[[38, 0, 59], [155, 108, 181]],
+	'lipsPuff':[[38, 0, 59], [155, 108, 181]],
+
 	'throat':[[96, 48, 0], [221, 186, 152]],
 	'tongue':[[255, 85, 0], [255, 228, 215]],
 	'ears':[[0, 28, 0], [95, 161, 95]],

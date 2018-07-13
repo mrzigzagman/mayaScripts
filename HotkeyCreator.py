@@ -6,8 +6,8 @@
 # to create commands. Following "P_ALT_R" format. One button creates all commands, clears the hotkey and assign to
 # the key with Press/Release and Alt/etc modifiers.
 
-# Run once with in relation to Hotkeys.py
-# Current version doesn't assign Press and Release correctly. But all commands will be created. much easier to assign shortcuts.
+# Run once in relation to Hotkeys.py
+# All commands will be created. much easier to assign shortcuts.
 
 import maya.cmds as cmds
 import maya.mel as mel

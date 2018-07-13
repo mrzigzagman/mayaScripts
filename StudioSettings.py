@@ -12,7 +12,8 @@ def ProjectInfo(sProj = ''):
 
 	### CUSTOMIZE - Playblast Size ###
 	dPlayBlastSize = {	''   :[0, 0],
-						'ABA':[1092, 576],}
+						'ABA':[1092, 576],
+						'UAP':[1024, 576],}
 
 	aProjectInfo = [[0,0], # Playblast Width & Height (int has to be able to divide by 4.)
 					]
@@ -123,7 +124,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 												'MayaBGtone5': (0.3215,0.2627,0.3490),
 												'MayaBGtone6': (0.3490,0.2627,0.3137),
 												'MayaBGtone7': (0.3490,0.2745,0.2627),
-												'MayaBGtone8': (0.3490,0.3476,0.2627),
+												#'MayaBGtone8': (0.3490,0.3476,0.2627),
 												} }
 		aKeys = ['MayaBGColourAssign', 'MayaBGColourFrequency']
 		for n in aKeys:
@@ -243,9 +244,11 @@ def SceneInfoStorage(sTool, dDict = None):
 	#def AnimToolAttributes(sTool, dDict = None):
 
 	# This funciton...
-	# 1. Sets Custom Animation Nodes for different custom tools. With Attributes Note activated (if they don't exist.)
-	# 2. Rewirtes (if dDict is entered.)
+	# 1. Creates Custom Animation Node to store a dictionary for any use for any custom tools. (if it doesn't exist.)
+	# 2. Rewrites (if dDict is entered.)
 	# 3. Returns dictionary. (if no dDict is specified.)
+
+	# Note : make sure 'ANIM_TOOLS' exists first.
 
 
 	oAnimTools = 'ANIM_TOOLS'
