@@ -1,5 +1,4 @@
-# PlayBlast Tool v10.3.0
-# Re Construct with New UIBuilderTemplate
+# PlayBlast Tool v10.4.0
 # vvv 3/3
 
 import maya.cmds as cmds
@@ -23,22 +22,13 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		self.sTool = 'PBTool' # Tool name node under 'Anim_Tool'
 
 		# Importing Studio Settings
-		#self.sScriptNamStudioSettings' # remove '.py'
-		#self.sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts'
-		#StudioSettings = imp.load_source(self.sScriptName, '%s/%s.py'%(self.sScriptPath,self.sScriptName))
-
-		# Getting info uStudioSettings
-		#self.aShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
-		#self.dShotInfo = aShotInfo[15]
 		self.dShotInfo = StudioSettings.ShotInfo(1,0)
 		aPBInfo = StudioSettings.ProjectInfo('ABA')[0]
 		self.iPBwidth = aPBInfo[0]
 		self.iPBheight = aPBInfo[1]
-		#self.sRvPath = self.aShotInfo[6] + 'Active.rv'
-		#self.sRvPath = self.dShotInfo['sPlayBlastToolPath'] + 'Active.rv'
-		self.sRvPath = self.dShotInfo['sPlayBlastToolPath'] + '_.rv'
 
-		#self.oUI = 'PB_%s_%s' % (self.aShotInfo[4], self.aShotInfo[3]) # Watch out when this is only numbers, the tool fails.
+		sFileName = '%s_%s_.rv' % (self.dShotInfo['sSeqNumber'], self.dShotInfo['sShotNumber'])
+		self.sRvPath = os.path.join(self.dShotInfo['sPlayBlastToolPath'], sFileName)
 		self.oUI = 'PB_%s_%s' % (self.dShotInfo['sSeqNumber'], self.dShotInfo['sShotNumber']) # Watch out when this is only numbers, the tool fails.
 
 		# Setting up tool custom dictionary for storage
@@ -592,32 +582,14 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 		if sSoundTest:
 			sSound = '"%s"'%cmds.sound( sSoundTest, q = True, f = True)
-			sOffsetPath = '/'.join(aAllPath[1]+['000.sound.rv'])
-			sOffset = ''
 
-			if os.path.exists(sOffsetPath):
-				iOffset = None
-				oRvFile = open(sOffsetPath, 'r')
-				aLines = oRvFile.readlines()
-				oRvFile.close()
 
-				for line in aLines:
-					sLine = line.strip()
-					if 'float audioOffset = ' in sLine:
-						iOffset = float(sLine.split(' ')[-1])
+			iOffset = 0
+			print sSound
 
-				if iOffset:
-					sOffset = '''
-					group
-					{
-						float audioOffset = %s
-					}
-					''' % iOffset
-
-			else:
-				cmds.warning('000.sound.rv not found! Better create NOW. (The offset value will be based on this file.)')
-
-		return [sSound, sOffset]
+			return [sSound, iOffset]
+		else:
+			return None
 
 
 	def UIButton_ExtraToolExpand(self, sTool, *args):
@@ -895,7 +867,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 				aPath = [None, None, None, None, ]
 				for i in range(0, len(aPath)):
 					#aPath[i] = self.aShotInfo[7] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg'%(str(i+1), str(i+1), sIn, sOut)
-					aPath[i] = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg'%(str(i+1), str(i+1), sIn, sOut)
+					aPath[i] = '"'+self.dShotInfo['sPlayBlastSeqPath'] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg"'%(str(i+1), str(i+1), sIn, sOut)
 
 
 
@@ -1029,8 +1001,17 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 	def CreateLatestQuadRvFile(self, aPath):
 		sContent = None
+		iSoundOffset = 0
+
 
 		if aPath:
+
+			aSound = self.SoundCheck()
+			if aSound:
+				aPath[0] = '[%s %s]'%(aPath[0], aSound[0])
+				iSoundOffset = aSound[1]
+				print aPath[0]
+
 			sContent = '''GTOa (3)
 
 rv : RVSession (2)
@@ -1038,16 +1019,21 @@ rv : RVSession (2)
 	session
 	{
 		string viewNode = "defaultLayout"
-		int[2] range = [ [ 1 35]]
 		float fps = 24
 	}
+
 }
 
 sourceGroup000000_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
+	}
+
+	group
+	{
+		float audioOffset = %s
 	}
 }
 
@@ -1055,7 +1041,7 @@ sourceGroup000001_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
 	}
 }
 
@@ -1063,7 +1049,7 @@ sourceGroup000002_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
 	}
 }
 
@@ -1071,9 +1057,9 @@ sourceGroup000003_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
 	}
-}'''% (aPath[0], aPath[1],aPath[2], aPath[3])
+}'''% (aPath[0], iSoundOffset, aPath[1],aPath[2], aPath[3])
 
 
 		return sContent

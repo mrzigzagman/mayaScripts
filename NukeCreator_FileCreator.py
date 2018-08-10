@@ -9,14 +9,16 @@ try:
 except ImportError:
 	import pickle
 
+import StudioSettings
+
 # vvv 1/1
 
 fNukeCreatorFile = os.path.join(os.path.dirname(__file__), "NukeCreator_Customizer.py")
 
 # Getting Shot Number - StudioSettings.py
-sScriptName = 'StudioSettings' # remove '.py'
-sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts/%s.py' % sScriptName
-StudioSettings = imp.load_source(sScriptName, sScriptPath)
+#sScriptName = 'StudioSettings' # remove '.py'
+#sScriptPath = '/vol/transfer/dyabu/Scripts/mayaScripts/%s.py' % sScriptName
+#StudioSettings = imp.load_source(sScriptName, sScriptPath)
 
 # Getting info using StudioSettings
 dShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths.)
@@ -24,7 +26,11 @@ dShotInfo = StudioSettings.ShotInfo(1,0) # (1,1) = (Folder Creation, Print paths
 # vvv paths 1/1
 dShot = {
 	"FilePath": "/%s/shots/%s/%s/motion/work/maya/dyabu/Images/Nuke/TheNukeFile.nk"%(dShotInfo['sProject'], dShotInfo['sSeqNumber'], dShotInfo['sShotNumber']),
-	'ShotNumber': "  %s %s"%(dShotInfo['sSeqNumber'], dShotInfo['sShotNumber'])
+	'ShotNumber': "  %s %s"%(dShotInfo['sSeqNumber'], dShotInfo['sShotNumber']),
+	'sShotNumber': dShotInfo['sShotNumber'],
+	'sSeqNumber': dShotInfo['sSeqNumber'],
+	'sProject': dShotInfo['sProject'],
+	'sNukeFileFolder': dShotInfo['sNukeFileFolder'],
 	}
 
 def main():

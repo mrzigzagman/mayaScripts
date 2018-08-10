@@ -388,10 +388,13 @@ def HotKey_AttrIncrement_n01():
 	DisplayFaceValues()
 
 def HotKey_ToggleVisCurves():
+	print 'test'
 	# Toggle nurbsCurve in modelPanel4 (top Left)
 	bSwitch = cmds.modelEditor('modelPanel4', q = True, nurbsCurves = True)
+	print bSwitch
 	#bSwitch = bSwitch * -1 +1
 	bSwitch = False == bSwitch
+	print bSwitch
 
 	cmds.modelEditor('modelPanel4', e = True, nurbsCurves = bSwitch, handles = bSwitch, locators = bSwitch)
 	cmds.modelEditor('modelPanel1', e = True, nurbsCurves = bSwitch, handles = bSwitch, locators = bSwitch)
@@ -457,6 +460,7 @@ def HotKey_PreviousFrame():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.currentTime(q = True) - 1)
 	GreenTickKeys()
+	cmds.undoInfo(swf = 1)
 	DisplayFaceValues()
 
 
@@ -472,6 +476,7 @@ def HotKey_PreviousKey():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.findKeyframe(timeSlider = True, which = 'previous'))
 	GreenTickKeys()
+	cmds.undoInfo(swf = 1)
 	DisplayFaceValues()
 
 
@@ -486,6 +491,7 @@ def HotKey_NextKey():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.findKeyframe(timeSlider = True, which = 'next'))
 	GreenTickKeys()
+	cmds.undoInfo(swf = 1)
 	DisplayFaceValues()
 
 
@@ -571,6 +577,7 @@ def HotKey_NextFrame():
 	cmds.undoInfo(swf = 0)
 	cmds.currentTime(cmds.currentTime(q = True) +1 )
 	GreenTickKeys()
+	cmds.undoInfo(swf = 1)
 	DisplayFaceValues()
 
 
@@ -616,6 +623,10 @@ def HotKey_Focus():
 def HotKey_SetUI():
 
 	oSel = [str(o) for o in cmds.ls(sl = True, o = True)]
+
+	# Timeline setting : Display Key Ticks to : 'selected'
+	oPlayBackSlider = mel.eval('$tmpVar=$gPlayBackSlider')
+	cmds.timeControl(oPlayBackSlider, edit = True, animLayerFilterOptions = 'selected')
 
 	# ANIM camera creation
 	iRecreateAnimCam = 0 # 1 = Re-create ANIM_CAM everytime. 0 = Only create when there is no cam.
@@ -691,14 +702,14 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 				'CustomCamViewList':[]}
 
 	# Node Structure Creation
-	aGroup = [	'AllCameras',
-				'CardRig_',
-				'SideCam_',
-				'FaceCam_',
-				'RenderCam_',
-				'Rosa',
-				'Alita',
-				'Lights'] # Do not change the list order. Possible to add more.
+	aGroup = [	'lllllllllllllllll__CAMERAs__lllllllllllllllll',
+				'CardRig___',
+				'SideCam___',
+				'FaceCam___',
+				'RenderCam___',
+				'lllllllllllllllll__Main_Puppet__lllllllllllll',
+				'lllllllllllllllll__Sub_Puppet__llllllllllllll',
+				'lllllllllllllllll__Lights__llllllllllllllllll'] # Do not change the list order. Possible to add more.
 	cmds.select(clear = True)
 
 	iError = 0
@@ -706,11 +717,17 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 	# Parent Nodes
 	for g in aGroup:
 		if not cmds.objExists(g):
-			if '_' in g: cmds.group( em = True, name = g, p = aGroup[0])
+			if '___' in g: cmds.group( em = True, name = g, p = aGroup[0])
 			else: cmds.group( em = True, name = g)
 			if g == aGroup[0]:
 				cmds.addAttr(aGroup[0], shortName = 'notes', dataType = 'string') # Activate Notes Attributes to store json
 				StudioSettings.SceneInfoStorage(aGroup[0], dSceneInfo) # Store dSceneInfo
+		if 'lllll' in g:
+			vColour = UIColourControl.keywordColour('MayaBG')
+			vColour = UIColourControl.offsetRGBvalues(vColour, R = 0.3, G = 0.3, B = 0.3)
+			for i, v in enumerate('RGB'): 
+				cmds.setAttr('%s.useOutlinerColor'%g, True)
+				cmds.setAttr('%s.outlinerColor%s'%(g, v), vColour[i])
 
 
 	## Logic to find available cameras. (find children for camera)
@@ -738,7 +755,6 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 		iIndex = dSceneInfo['CustomCamViews'] + 1
 
 
-
 	if not iError: # If cameras are found...
 		sCamera = dSceneInfo['CustomCamViewList'][iIndex]
 		aCamera = cmds.listRelatives(sCamera, c = True, ad = True, type = 'camera')
@@ -763,11 +779,16 @@ def ProjectCustom_SetUI(): # vvv 2/3 # Completely Custom tool for current proj.
 
 
 		# Pick camera of the first match in the keyword.
+		sCamera = None
+		sTCamera = None # This is needed if keyword search fails. (Just to have something selected.)
 		for c in aCamera:
+			sCamera = c
 			for k in aCamKeyword:
 				if k in c:
-					sCamera = c
+					sTCamera = c
 					break
+		if sTCamera:
+			sCamera = sCamera
 		if sCamera:
 			cmds.modelEditor('modelPanel4', e = True, camera = sCamera)
 		cmds.modelEditor('modelPanel1', e = True, camera = 'ANIM_CAM', activeView = True)

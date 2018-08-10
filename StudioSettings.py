@@ -7,6 +7,7 @@ import getpass
 import os.path
 import os
 
+
 def ProjectInfo(sProj = ''):
 	# Project base settings
 
@@ -161,7 +162,7 @@ def ShotInfo(iFolder = 0, iPrint = 0):
 	##
 
 	SSV_sMayaEnvScriptFolder = os.path.join(SSV_sEnvFolder, 'scripts')
-	SSV_sNukeFileFolder = os.path.join(sScenePath, aProductionPath[4])
+	SSV_sNukeFileFolder = os.path.join(sScenePath, aProductionPath[9])
 
 	# Scene Path
 	SSV_sScenePath = os.path.join(sScenePath, aProductionPath[0])
@@ -251,11 +252,19 @@ def SceneInfoStorage(sTool, dDict = None):
 	# Note : make sure 'ANIM_TOOLS' exists first.
 
 
-	oAnimTools = 'ANIM_TOOLS'
+	oAnimTools = 'llllllllllllllll__ANIM_TOOLS__llllllllllllllll'
 	if not cmds.objExists(oAnimTools):
 		cmds.group(em = True, name = oAnimTools)
 		cmds.addAttr(oAnimTools, shortName = 'notes', dataType = 'string') # Activate Notes Attributes to store json
 		cmds.setAttr('%s.notes'%oAnimTools, json.dumps(None, indent = 4) , type = 'string')
+
+		
+		
+		vColour = (0.963, 0.987, 0.308)
+		for i, v in enumerate('RGB'): 
+			cmds.setAttr('%s.useOutlinerColor'%oAnimTools, True)
+			cmds.setAttr('%s.outlinerColor%s'%(oAnimTools, v), vColour[i])
+			
 
 
 	if not cmds.objExists(sTool):

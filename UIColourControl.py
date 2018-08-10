@@ -58,10 +58,7 @@ def faceColour(sColour = 'default'):
 
 
 def offsetRGBvalues(aRGB = [0.0, 0.0, 0.0], R = 0.0, G = 0.0, B = 0.0):
-	aRGB[0] += R
-	aRGB[1] += G
-	aRGB[2] += B
-	return aRGB
+	return [aRGB[0] + R, aRGB[1] + G, aRGB[2] + B]
 
 
 def getRGBvalues(aRGB): # from 255 to 1.0 USE convertRGBvaluesToScaleOF instead.
@@ -144,6 +141,24 @@ def keywordColour(sColour = 'Red'):
 
 				'SeqButton' : (0.1882, 0.2627, 0.2706),
 				'RvButton' : (0.1216, 0.2471, 0.2706),
+
+				# Time Sheet Colour Collection
+				'TimeSheet_BG':(0.1804, 0.2510, 0.3255),
+				'TimeSheet_WeekDay':(0.8392, 0.8588, 0.8745),
+				'TimeSheet_WeekEnd':(0.5216, 0.5725, 0.6196),
+				'TimeSheet_Chart_OffWork_BG':(0.3647, 0.4275, 0.4941),
+				'TimeSheet_Chart_OffWork_Line':(0.5216, 0.5725, 0.6196),
+				'TimeSheet_Chart_WorkHour_BG':(0.2039, 0.2863, 0.3686),
+				'TimeSheet_Chart_WorkHour_Line':(0.5216, 0.5725, 0.6196),#(0.6824, 0.7137, 0.7490),
+				'TimeSheet_Chart_Noon_Line':(0.9592, 0.9788, 0.9945),
+				'TimeSheet_Shade':(0.3647, 0.4275, 0.4941),
+				'TimeSheet_TotalHours':(0.3647, 0.4275, 0.4941),
+				'TimeSheet_TotalHoursTS':(0.7647, 0.8275, 0.8941),
+
+				#'TimeSheetChartColour':(0.82, 1.000, 0.920),
+				#'TimeSheetChartColour':(0.82, 0.900, 1.000),
+				#'TimeSheetChartColour':(1, 0.950, 0.990),
+				'TimeSheetChartColour':(0.990, 0.990, 0.890),
 
 
 				# General

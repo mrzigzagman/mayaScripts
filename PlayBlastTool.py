@@ -1,4 +1,4 @@
-# PlayBlast Tool v10.3.1
+# PlayBlast Tool v10.4.0
 # vvv 3/3
 
 import maya.cmds as cmds
@@ -85,6 +85,75 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 		self.UICreate()
 
+
+
+	def NukeConversion(self, aShot): 
+		'''
+		aShot = [
+			'/proj/uap/shots/0571gr/0140/motion/work/maya/dyabu/Images/PB/3/PlayBlast_3.####.jpg',
+			'/proj/uap/shots/0571gr/0140/motion/work/maya/dyabu/Images/PB/1/PlayBlast_1.####.jpg',
+			1009,
+			1049,
+			1.0, # Gamma Value
+			]'''
+
+		import os
+		import subprocess
+		import os.path
+		import base64
+		try:
+			import cPickle as pickle
+		except ImportError:
+			import pickle
+
+		# CUSTOM
+		import StudioSettings
+		reload(StudioSettings)
+
+		import UIColourControl
+		reload(UIColourControl)
+
+		import UIWindowControl
+		reload(UIWindowControl)
+
+
+		fNukeCreatorFile = os.path.join(os.path.dirname(__file__), "PlayBlastTool_NukeConverter.py")
+
+
+
+	
+		# Using sys.argv to pass info of shot number to NukeCreator2.py.
+		command = 'nuke -t -- "%s" "%s"' % (fNukeCreatorFile, base64.b64encode(pickle.dumps(aShot)))# import pickle & base
+		# command = 'nuke -t -- "%s"' % (fNukeCreatorFile) # import pickle & base64
+		# -t : runs in terminal mode
+		# -- : tells nuke that not to pick up information from that point on.
+		# anything after -- will be stored in sys.argv
+		# pickle stores data into strings.
+		# base64 combines info into one. (in this case, a dictionary(non string) to pass through to sys.argv)
+
+		# For testing:
+		#print sys.argv[1] # System variable cross softwares. List and String. sys.argv[0] is Self.
+
+		print 'conversion begin...'
+
+		try:
+			process = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+			while True:
+				line = process.stdout.readline()
+				if not line:
+					break
+				#print line, # print lines of conversion.
+			err = process.stderr.read()  # Collects "Standard errors" (incl. exceptions.)
+			if process.returncode:  # gets code of what has returned. if 0, no errors. ohter, with error(s)of some kind.
+				raise Exception(err)
+			else:
+				print err # includes "Warnings" Here.
+		finally:
+			pass
+
+		print 'conversion end.'	
+
+
 	def UIConvertTool(self, sType, *args):
 		self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
 		iNukeConversion = 0
@@ -94,16 +163,17 @@ class UIBuilder: # UIBuilder Template v006.0.2
 		if sType == 'Pick': # Pick Button
 			for i in range(5):
 				self.dDict['ConvertToolFrom'][i] = 0
-			self.dDict['PickedFile'] = ''
+			self.dDict['PickedFile'] = None
 
 			sPickedFile = cmds.fileDialog2(ds = 1, cap = 'Title', fm = 1)
 			if sPickedFile:
 				self.dDict['ConvertToolFrom'][0] = 1
-				self.dDict['PickedFile'] = sPickedFile
+				self.dDict['PickedFile'] = sPickedFile[0]
 				StudioSettings.SceneInfoStorage(self.sTool, self.dDict) # Store dDict
 
 
-		elif sType.isdigit(): # From : 1-4, To : 5-8
+
+		elif sType.isdigit(): # From : 1-4, To : 5-8 Button
 			iIndex = int(sType)
 
 			if iIndex <5: # From: 1-4
@@ -112,6 +182,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 				iVal = 1
 
 				self.dDict['ConvertToolTo'][iIndex] = 0
+				self.dDict['PickedFile'] = ''
 
 			else: # To : 5 - 8
 				sVar = 'ConvertToolTo'
@@ -127,13 +198,13 @@ class UIBuilder: # UIBuilder Template v006.0.2
 			self.dDict[sVar][iIndex] = iVal
 
 
-		else: # Convert
-			if self.dDict['ConvertToolTo'][0]:
+		else: # Convert Button
+			if self.dDict['ConvertToolTo'][0]: # When ready to convert files.
 
 				# Empty destination Folder
 				iTarget =  self.dDict['ConvertToolTo'][1:].index(1)+1
-				#sTargetPath = self.aShotInfo[7] + '/%s/' % iTarget
 				sTargetPath = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/' % iTarget
+				sTargetFilePath = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/PlayBlast_%s.####.jpg' % (iTarget, iTarget)
 
 
 				if os.path.exists(sTargetPath):
@@ -142,51 +213,42 @@ class UIBuilder: # UIBuilder Template v006.0.2
 				if not os.path.exists(sTargetPath):
 					os.makedirs(sTargetPath) # create .../PB/3/
 
-
+				
 
 				# Get SourcePath
-				if self.dDict['ConvertToolFrom'][0]: #if user selecting files:
-
-					self.dDict = StudioSettings.SceneInfoStorage(self.sTool)
+				if self.dDict['ConvertToolFrom'][0]: #if user selecting files from browser:
 					if self.dDict['PickedFile']:
-						if not self.dDict['PickedFile'][0].endswith('jpg'):
-							iNukeConversion = 1
-						else:
-							aPickedPath = self.dDict['PickedFile'][0].split('/')
-							sPickedFile = aPickedPath[-1]
-							sSourcePath = '/'.join(aPickedPath[:-1])
+						aSourceFilePath = self.dDict['PickedFile'].split('.')
+						aSourceFilePath[-2] = '####'
+						sSourceFilePath = '.'.join(aSourceFilePath)
+
+				else:
+					iTarget =  self.dDict['ConvertToolFrom'][1:].index(1)+1
+					sSourceFilePath = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/PlayBlast_%s.####.jpg' % (iTarget, iTarget)
 
 
-				else: # if not picked ( if sSourcePath is none)
-					iSource = self.dDict['ConvertToolFrom'].index(1)
-					#sSourcePath = self.aShotInfo[7] + '/%s/' % iSource
-					sSourcePath = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/' % iSource
-					#dShotInfo['sPlayBlastSeqPath']
+				if sSourceFilePath.lower().endswith('jpg'):
+					aTargetFilePath = sTargetFilePath.split('.')
+					aSourceFilePath = sSourceFilePath.split('.')
 
+					for i in range(self.dDict['prodStartFrame'], self.dDict['prodEndFrame']+1):
+						s = '%04d'%i
+						aTargetFilePath[-2] = s
+						aSourceFilePath[-2] = s
 
+						sTargetFilePath = '.'.join(aTargetFilePath)
+						sSourceFilePath = '.'.join(aSourceFilePath)
 
-				# Get files to be copied over.
-				aTransferFiles = []
-				aFileName = [str(_) for _ in sPickedFile.split('.')]
+						shutil.copy(sSourceFilePath, sTargetFilePath)
 
-				if not aFileName[-1].lower() == 'jpg':
-					iNukeConversion = 1
+				else: # If picked files aren't jpgs. (Activate Nuke)
 
-				for  f in os.listdir(sSourcePath):
-					if f.startswith(aFileName[0]):
-						aTransferFiles.append(f)
-				aTransferFiles.sort()
+					print sSourceFilePath
+					print sTargetFilePath
+					print self.dDict['prodStartFrame']
+					print self.dDict['prodEndFrame']
 
-
-				sFileName = 'PlayBlast_%s'%iTarget
-				for tf in aTransferFiles:
-					aName = tf.split('.')
-					aName[0] = sFileName
-
-					shutil.copy(sSourcePath+'/' + tf, sTargetPath+'/'+'.'.join(aName))
-
-				if iNukeConversion:
-					print 'start nuke'
+					self.NukeConversion([sSourceFilePath, sTargetFilePath, self.dDict['prodStartFrame'], self.dDict['prodEndFrame'], 1.0])
 
 
 		iCheck = sum(self.dDict['ConvertToolFrom']) + sum(self.dDict['ConvertToolTo'][1:])
@@ -582,32 +644,14 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 		if sSoundTest:
 			sSound = '"%s"'%cmds.sound( sSoundTest, q = True, f = True)
-			sOffsetPath = '/'.join(aAllPath[1]+['000.sound.rv'])
-			sOffset = ''
 
-			if os.path.exists(sOffsetPath):
-				iOffset = None
-				oRvFile = open(sOffsetPath, 'r')
-				aLines = oRvFile.readlines()
-				oRvFile.close()
 
-				for line in aLines:
-					sLine = line.strip()
-					if 'float audioOffset = ' in sLine:
-						iOffset = float(sLine.split(' ')[-1])
+			iOffset = 0
+			print sSound
 
-				if iOffset:
-					sOffset = '''
-					group
-					{
-						float audioOffset = %s
-					}
-					''' % iOffset
-
-			else:
-				cmds.warning('000.sound.rv not found! Better create NOW. (The offset value will be based on this file.)')
-
-		return [sSound, sOffset]
+			return [sSound, iOffset]
+		else:
+			return None
 
 
 	def UIButton_ExtraToolExpand(self, sTool, *args):
@@ -666,7 +710,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 			elif sType == 'Marked':
 
-				oAnimTools = 'ANIM_TOOLS'
+				oAnimTools = 'llllllllllllllll__ANIM_TOOLS__llllllllllllllll'
 				self.sTool = 'PBTool'
 				if K:
 					oTick = 'KeyPoseFrames'
@@ -885,7 +929,7 @@ class UIBuilder: # UIBuilder Template v006.0.2
 				aPath = [None, None, None, None, ]
 				for i in range(0, len(aPath)):
 					#aPath[i] = self.aShotInfo[7] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg'%(str(i+1), str(i+1), sIn, sOut)
-					aPath[i] = self.dShotInfo['sPlayBlastSeqPath'] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg'%(str(i+1), str(i+1), sIn, sOut)
+					aPath[i] = '"'+self.dShotInfo['sPlayBlastSeqPath'] + '/%s/PlayBlast_%s.%s-%s@@@@.jpg"'%(str(i+1), str(i+1), sIn, sOut)
 
 
 
@@ -1019,8 +1063,17 @@ class UIBuilder: # UIBuilder Template v006.0.2
 
 	def CreateLatestQuadRvFile(self, aPath):
 		sContent = None
+		iSoundOffset = 0
+
 
 		if aPath:
+
+			aSound = self.SoundCheck()
+			if aSound:
+				aPath[0] = '[%s %s]'%(aPath[0], aSound[0])
+				iSoundOffset = aSound[1]
+				print aPath[0]
+
 			sContent = '''GTOa (3)
 
 rv : RVSession (2)
@@ -1028,16 +1081,21 @@ rv : RVSession (2)
 	session
 	{
 		string viewNode = "defaultLayout"
-		int[2] range = [ [ 1 35]]
 		float fps = 24
 	}
+
 }
 
 sourceGroup000000_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
+	}
+
+	group
+	{
+		float audioOffset = %s
 	}
 }
 
@@ -1045,7 +1103,7 @@ sourceGroup000001_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
 	}
 }
 
@@ -1053,7 +1111,7 @@ sourceGroup000002_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
 	}
 }
 
@@ -1061,9 +1119,9 @@ sourceGroup000003_source : RVFileSource (1)
 {
 	media
 	{
-		string movie = "%s"
+		string movie = %s
 	}
-}'''% (aPath[0], aPath[1],aPath[2], aPath[3])
+}'''% (aPath[0], iSoundOffset, aPath[1],aPath[2], aPath[3])
 
 
 		return sContent

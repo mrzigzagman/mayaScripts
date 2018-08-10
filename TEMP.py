@@ -1,3 +1,4 @@
+
 # TEMPORARY
 print '# TEMP.py #'
 import maya.cmds as cmds
@@ -7,9 +8,27 @@ import maya.cmds as cmds
 #import maya.mel as mel
 #import getpass
 #import json
-import imp
 #import os
+#import subprocess
+#import os.path
+#import imp
+#import base64
+#import collections
+import sqlite3
+import datetime
+import time
+import calendar
+from datetime import date, timedelta
+
 #import redbox as rb # vv v
+
+# Jason's stuff
+if 0:
+    import sys; p="/weta/prod/motion/work/jdixon/python/"
+    if p not in sys.path: sys.path.append(p)
+    #import timetrack
+    #import db
+
 
 # CUSTOM
 import StudioSettings
@@ -26,29 +45,27 @@ K = cmds.getModifiers()
 ################################################################################
 
 def main():
-	# Attribute Increment v4.0.0
-	oChannel = [str(c+'.'+cmds.attributeName(c+'.'+b, l=True)) for a in 'msho' for b in cmds.channelBox('mainChannelBox', **{'q':True, 's%sa'%a:True}) or [] for c in cmds.channelBox('mainChannelBox', q = True, **{'%sol'%a:True})]
-	iAmount  = -0.1
+    import sys; p = "/vol/transfer/dyabu/Scripts/mayaScripts/"
 
-	iNewValue = None
+    if p not in sys.path: sys.path.append(p)
+    
+    import TimeSheetDisplayTool
+    reload(TimeSheetDisplayTool)
+    TimeSheetDisplayTool.main()
 
-	if oChannel:
-		for c in oChannel:
-			iVal = cmds.getAttr(c) + iAmount
+    
+    '''
+    import colorsys
 
-			if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], minExists = True):
-				if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], min = True)[0] >= iVal :
-					iNewValue = cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], min = True)[0]
+    a = [0.9, 0.9, 0.9]
+    print a
 
-			if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], maxExists = True):
-				if cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], max = True)[0] <= iVal:
-					iNewValue = cmds.attributeQuery(c.split('.')[-1], node = c.split('.')[0], max = True)[0]
 
-			if not iNewValue == None:
-				cmds.setAttr(c, iNewValue)
-			else:
-				cmds.setAttr(c, iVal)
+    b = UIColourControl.RGBHSVconverter('ToHSV', a)
+    print b
 
-	else:
-		aPrint = ['d8766c', 'No Attr Selected', 0x756b6b, 'midCenterBot']
-		cmds.inViewMessage(amg = '<text style="color:#%s";>%s</text>'%(aPrint[0], aPrint[1]), pos = aPrint[3], fade = True, fts = 10, ft = 'arial',bkc = aPrint[2] )
+    c = UIColourControl.RGBHSVconverter('ToRGB', b)
+    print c
+
+    '''
+

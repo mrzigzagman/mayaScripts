@@ -10,43 +10,16 @@ try:
 	import cPickle as pickle
 except ImportError:
 	import pickle
-dShotInfo = pickle.loads(base64.b64decode(sys.argv[1]))
+dShot = pickle.loads(base64.b64decode(sys.argv[1]))
 
 
 #### Creating BackdropNode ###
 sNodeParent = 'colNodeParent'
 
-# iWidth = 100
-# iHeight = 100
-# iPad = 10
-
-# def p(col, row, width, height, pad=0):
-# 	return [
-# 		col*iWidth-pad*iPad,
-# 		row*iHeight-pad*iPad,
-# 		width*iWidth+pad*iPad*2,
-# 		height*iHeight+pad*iPad*2]
-#
-# def stuff(col, row):
-# 	return [
-# 		col*iWidth,
-# 		row*iHeight]
-
+### .setValue() ###
 aNodes = [  ['BackdropNode',
 				['z_order', 'name', 'tile_color', 'label', 'note_font_size', 'note_font_color', 'xpos', 'ypos', 'bdwidth', 'bdheight'],
-				# [   [0, '', 0x212121ff, dShotInfo['ShotNumber'],    60, 0xfefefeff, 0, 0, 9*iWidth, 8*iHeight ],
-				# 	[0, '', 0x3d505bff, 'FACIAL',      43, 0xaaffffff] + p(6,0,3,8),
-				# 	[0, '', 0x7ea5bcff, '1',            43, 0xaaffffff, -816, 291, 270, 180 ],
-				# 	[0, '', 0x365147ff, '2',            43, 0xaaffffff] + p(0,4,3,4),
-				# 	[0, '', 0x81c1a9ff, '3',            43, 0xaaffffff, -1660, 770, 180, 130 ],
-				# 	[0, '', 0x7ea5bcff, '4',            43, 0xaaffffff, -883, 770, 180, 130 ],
-				# 	[0, '', 0x7ea5bcff, '5',            43, 0xaaffffff, -671, 770, 180, 130 ],
-				# 	[3, '', 0x604800ff, 'MAIN PLATE',  43, 0xffe9aaff,] + p(3,0,3,8),
-				# 	[5, '', 0xc19100ff, '6',            43, 0xffe9aaff, -1356, 768, 180, 130 ],
-				# 	[5, '', 0xc19100ff, '7',            43, 0xffe9aaff, -1132, 768, 180, 130 ],
-				# 	[5, '', 0xc19100ff, '8',            43, 0xffe9aaff, -1284, 289, 270, 180 ],
-				#	],],
-				[   [0, '', 0x212121ff, dShotInfo['ShotNumber'],    60, 0xfefefeff, -1767, 173, 1320, 781 ],
+				[   [0, '', 0x212121ff, dShot['ShotNumber'],    60, 0xfefefeff, -1767, 173, 1320, 781 ],
 					[0, '', 0x3d505bff, 'FACIAL',      43, 0xaaffffff, -913, 218, 440, 710 ],
 					[0, '', 0x7ea5bcff, '',            43, 0xaaffffff, -816, 291, 270, 180 ],
 					[0, '', 0x365147ff, '',            43, 0xaaffffff, -1746, 531, 349, 398 ],
@@ -87,27 +60,26 @@ aNodes = [  ['BackdropNode',
 						['Reformat2', -1610, 710],
 						['Reformat3', -1308, 710],],],
 			['Write',
-					['name', 'xpos', 'ypos'],
-					[   ['Write1', -833, 810],
-						['Write2', -620, 810],
-						['Write3', -1079, 810],
-						['Write4', -1610, 810],
-						['Write5', -1308, 810],],],
+					['name', 'xpos', 'ypos', 'file_type'],
+					[   ['Write1', -833, 810, 'jpg'],
+						['Write2', -620, 810, 'jpg'],
+						['Write3', -1079, 810, 'jpg'],
+						['Write4', -1610, 810, 'jpg'],
+						['Write5', -1308, 810, 'jpg'],],],
 			['Roto',
 					['name', 'xpos', 'ypos'],
-					[   ['Roto1', -1610, 610],],],
+					[   ['Roto1', -1610, 600],],],
 			['Premult',
 					['name', 'xpos', 'ypos'],
 					[   ['Premult1', -1610, 640],],],
 			['Viewer',
 					['name', 'xpos', 'ypos'],
 					[   ['Viewer1', -1159, 1113],],],
-
 		]
 
 
-# 1. Create Nodes Listed above.
-# 2. Create a dictionary of nodes as objects. with Keys being the name of the node in string.
+# 1. Populate Nodes Listed above.
+# 2. Create dNode, a dictionary of nodes as objects. with Keys being the name of the node in string.
 dNode = {}
 for x in range(0, len(aNodes)):
 	for list in aNodes[x][2]:
@@ -119,6 +91,27 @@ for x in range(0, len(aNodes)):
 
 
 
+### .setValue() ###
+
+#print dShot['sShotNumber']
+#print dShot['sSeqNumber']
+#print dShot['sProject']
+#print '/'.join([dShot['sNukeFileFolder'], 'Seq/Face/Front/'] )
+#print '/proj/uap/shots/0571gr/0140/motion/work/maya/dyabu/Images/Nuke/Seq/Face/Front/'
+#print dNode
+
+
+dNode['Write1']['file'].fromUserText('/'.join([dShot['sNukeFileFolder'], 'Seq/Face/Front/v001/FaceFront.####.jpg'] ))
+dNode['Write2']['file'].fromUserText('/'.join([dShot['sNukeFileFolder'], 'Seq/Face/Front/v002/FaceFront2.####.jpg'] ))
+dNode['Write4']['file'].fromUserText('/'.join([dShot['sNukeFileFolder'], 'Seq/Roto/v001/Roto.####.jpg'] ))
+dNode['Write5']['file'].fromUserText('/'.join([dShot['sNukeFileFolder'], 'Seq/Plate/v001/Plate.####.jpg'] ))
+dNode['Write3']['file'].fromUserText('/'.join([dShot['sNukeFileFolder'], 'Seq/Plate/v002/Plate2.####.jpg'] ))
+
+#nuke.root()['format'].setValue(nuke.addFormat("1024 960 1")) 
+dNode['Reformat1']['format'].setValue(nuke.addFormat("500 500 0 0 500 500 1 500box"))
+#format "500 500 0 0 500 500 1 500box"
+
+### NODE CONNECTION ###
 #                Node, Node, Node, ... int (connection input) ]
 aConnection = [ ['Read1', 'ColorCorrect1', 'Dot3', 'Dot2', 'Dot1', 'Roto1', 'Premult1', 'Reformat2', 'Write4', 0],
 				['Dot2', 'Reformat3', 'Write5', 0],
@@ -137,12 +130,12 @@ for connection in aConnection:
 # TODO: Deleting file to create a new file. un comment when modifying nuke tree.
 import os
 try:
-	os.unlink(dShotInfo['FilePath'])
+	os.unlink(dShot['FilePath'])
 except:
 	pass
 
 
-nuke.scriptSaveAs(dShotInfo['FilePath'])
+nuke.scriptSaveAs(dShot['FilePath'])
 nuke.scriptExit()
 
 
